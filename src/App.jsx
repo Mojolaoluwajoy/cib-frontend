@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import Profile from './pages/Profile';
 
-// Pages — we'll create these one by one next
 import Login          from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard      from './pages/Dashboard';
@@ -33,6 +33,22 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+                 <Route path="/settings" element={
+                   <ProtectedRoute><SettingsMenu /></ProtectedRoute>
+                 }/>
+                 <Route path="/settings/password" element={
+                   <ProtectedRoute><SettingsPassword /></ProtectedRoute>
+                 }/>
+                 <Route path="/settings/currency" element={
+                   <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
+                     <SettingsCurrency />
+                   </ProtectedRoute>
+                 }/>
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }/>
 
           {/* ── Public routes — no login needed ── */}
           <Route path="/login"           element={<Login />} />
