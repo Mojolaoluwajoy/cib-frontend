@@ -116,6 +116,24 @@ export default function Sidebar() {
         )}
 
         {/* System */}
+
+        {/* System */}
+        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
+          System
+        </p>
+        <NavLink to="/profile" className={({ isActive }) =>
+          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
+          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
+        }>
+          <i className="ti ti-user text-lg" /> My Profile
+        </NavLink>
+        <NavLink to="/settings" className={({ isActive }) =>
+          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
+          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
+        }>
+          <i className="ti ti-settings text-lg" /> Settings
+        </NavLink>
+
         <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
           System
         </p>
