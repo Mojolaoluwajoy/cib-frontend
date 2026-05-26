@@ -7,6 +7,11 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const [transactionsOpen, setTransactionsOpen] = useState(false);
 
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const isAdmin      = user?.role === 'ADMIN';
+  const isMaker      = user?.role === 'MAKER';
+  const isApprover   = user?.role === 'APPROVER';
+
   const initials = user?.name
     ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
@@ -14,6 +19,29 @@ export default function Sidebar() {
   function handleLogout() {
     logout();
     navigate('/login');
+  }
+
+  // ── Reusable nav link ──
+  function NavItem({ to, icon, label }) {
+    return (
+      <NavLink to={to} className={({ isActive }) =>
+        `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
+        ${isActive
+          ? 'bg-blue-600 text-white font-medium'
+          : 'text-white/55 hover:bg-white/10 hover:text-white'}`
+      }>
+        <i className={`ti ${icon} text-lg`} /> {label}
+      </NavLink>
+    );
+  }
+
+  // ── Section header ──
+  function SectionLabel({ label }) {
+    return (
+      <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
+        {label}
+      </p>
+    );
   }
 
   return (
@@ -30,123 +58,183 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
+      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
 
-        {/* Overview */}
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-2 pb-1">
-          Overview
-        </p>
-        <NavLink to="/dashboard" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-layout-dashboard text-lg" /> Dashboard
-        </NavLink>
+        {/* ════════════════════════════════ */}
+        {/* SUPER_ADMIN navigation           */}
+        {/* Only sees org management,        */}
+        {/* currencies and settings          */}
+        {/* ════════════════════════════════ */}
+        {isSuperAdmin && (
+          <>
+            <SectionLabel label="Overview" />
+            <NavItem to="/dashboard"      icon="ti-layout-dashboard" label="Dashboard" />
 
-        {/* Clients */}
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
-          Clients
-        </p>
-        <NavLink to="/org-onboarding" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-building text-lg" /> Org Onboarding
-        </NavLink>
-        <NavLink to="/user-onboarding" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-user-plus text-lg" /> User Onboarding
-        </NavLink>
-        <NavLink to="/accounts" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-building-bank text-lg" /> Accounts
-        </NavLink>
+            <SectionLabel label="Organizations" />
+            <NavItem to="/org-onboarding" icon="ti-building"         label="Org Approvals" />
 
-        {/* Transactions dropdown */}
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
-          Transactions
-        </p>
-        <button
-          onClick={() => setTransactionsOpen(!transactionsOpen)}
-          className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
-        >
-          <div className="flex items-center gap-2.5">
-            <i className="ti ti-arrow-left-right text-lg" /> Transactions
-          </div>
-          <i className={`ti ti-chevron-down text-sm transition-transform ${transactionsOpen ? 'rotate-180' : ''}`} />
-        </button>
-
-        {transactionsOpen && (
-          <div className="pl-3 flex flex-col gap-1 mt-1">
-            <NavLink to="/transactions?tab=internal" className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
-              ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
-            }>
-              <i className="ti ti-refresh text-sm" /> Internal Transfer
-            </NavLink>
-            <NavLink to="/transactions?tab=payout" className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
-              ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
-            }>
-              <i className="ti ti-send text-sm" /> External Payout
-            </NavLink>
-            <NavLink to="/transactions?tab=funding" className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
-              ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
-            }>
-              <i className="ti ti-cash text-sm" /> External Funding
-            </NavLink>
-            <NavLink to="/transactions?tab=pending" className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
-              ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
-            }>
-              <i className="ti ti-clock text-sm" /> Pending Approval
-            </NavLink>
-            <NavLink to="/transactions?tab=all" className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
-              ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
-            }>
-              <i className="ti ti-list text-sm" /> All Transactions
-            </NavLink>
-          </div>
+            <SectionLabel label="System" />
+            <NavItem to="/profile"        icon="ti-user"             label="My Profile" />
+            <NavItem to="/settings"       icon="ti-settings"         label="Settings" />
+          </>
         )}
 
-        {/* System */}
+        {/* ════════════════════════════════ */}
+        {/* ADMIN navigation                 */}
+        {/* Sees clients, accounts,          */}
+        {/* transactions and settings        */}
+        {/* ════════════════════════════════ */}
+        {isAdmin && (
+          <>
+            <SectionLabel label="Overview" />
+            <NavItem to="/dashboard"       icon="ti-layout-dashboard" label="Dashboard" />
 
-        {/* System */}
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
-          System
-        </p>
-        <NavLink to="/profile" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-user text-lg" /> My Profile
-        </NavLink>
-        <NavLink to="/settings" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-settings text-lg" /> Settings
-        </NavLink>
+            <SectionLabel label="Clients" />
+            <NavItem to="/users" icon="ti-users" label="Users" />
+             <NavItem to="/user-onboarding" icon="ti-user-plus"        label="User Onboarding" />
+            <NavItem to="/accounts"        icon="ti-building-bank"    label="Accounts" />
 
-        <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
-          System
-        </p>
-        <NavLink to="/settings" className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-          ${isActive ? 'bg-blue-600 text-white font-medium' : 'text-white/55 hover:bg-white/10 hover:text-white'}`
-        }>
-          <i className="ti ti-settings text-lg" /> Settings
-        </NavLink>
+            <SectionLabel label="Transactions" />
+            <button
+              onClick={() => setTransactionsOpen(!transactionsOpen)}
+              className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
+            >
+              <div className="flex items-center gap-2.5">
+                <i className="ti ti-arrow-left-right text-lg" /> Transactions
+              </div>
+              <i className={`ti ti-chevron-down text-sm transition-transform
+                ${transactionsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {transactionsOpen && (
+              <div className="pl-3 flex flex-col gap-0.5 mt-0.5">
+                {[
+                  { to: '/transactions?tab=internal', icon: 'ti-refresh',        label: 'Internal Transfer' },
+                  { to: '/transactions?tab=payout',   icon: 'ti-send',           label: 'External Payout'  },
+                  { to: '/transactions?tab=funding',  icon: 'ti-cash',           label: 'External Funding' },
+                  { to: '/transactions?tab=pending',  icon: 'ti-clock',          label: 'Pending Approval' },
+                  { to: '/transactions?tab=all',      icon: 'ti-list',           label: 'All Transactions' },
+                ].map(({ to, icon, label }) => (
+                  <NavLink key={to} to={to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
+                      ${isActive
+                        ? 'text-blue-400 font-medium'
+                        : 'text-white/45 hover:bg-white/10 hover:text-white'}`
+                    }>
+                    <i className={`ti ${icon} text-sm`} /> {label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+
+            <SectionLabel label="System" />
+            <NavItem to="/profile"  icon="ti-user"     label="My Profile" />
+            <NavItem to="/settings" icon="ti-settings" label="Settings" />
+          </>
+        )}
+
+        {/* ════════════════════════════════ */}
+        {/* MAKER navigation                 */}
+        {/* Can only initiate transactions   */}
+        {/* and view accounts                */}
+        {/* ════════════════════════════════ */}
+        {isMaker && (
+          <>
+            <SectionLabel label="Overview" />
+            <NavItem to="/dashboard" icon="ti-layout-dashboard" label="Dashboard" />
+
+            <SectionLabel label="Accounts" />
+            <NavItem to="/accounts"  icon="ti-building-bank"   label="Accounts" />
+
+            <SectionLabel label="Transactions" />
+            <button
+              onClick={() => setTransactionsOpen(!transactionsOpen)}
+              className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
+            >
+              <div className="flex items-center gap-2.5">
+                <i className="ti ti-arrow-left-right text-lg" /> Transactions
+              </div>
+              <i className={`ti ti-chevron-down text-sm transition-transform
+                ${transactionsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {transactionsOpen && (
+              <div className="pl-3 flex flex-col gap-0.5 mt-0.5">
+                {[
+                  { to: '/transactions?tab=internal', icon: 'ti-refresh', label: 'Internal Transfer' },
+                  { to: '/transactions?tab=payout',   icon: 'ti-send',   label: 'External Payout'  },
+                  { to: '/transactions?tab=funding',  icon: 'ti-cash',   label: 'External Funding' },
+                ].map(({ to, icon, label }) => (
+                  <NavLink key={to} to={to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
+                      ${isActive
+                        ? 'text-blue-400 font-medium'
+                        : 'text-white/45 hover:bg-white/10 hover:text-white'}`
+                    }>
+                    <i className={`ti ${icon} text-sm`} /> {label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+
+            <SectionLabel label="System" />
+            <NavItem to="/profile"  icon="ti-user"     label="My Profile" />
+            <NavItem to="/settings" icon="ti-settings" label="Settings" />
+          </>
+        )}
+
+        {/* ════════════════════════════════ */}
+        {/* APPROVER navigation              */}
+        {/* Can only approve transactions    */}
+        {/* and view accounts                */}
+        {/* ════════════════════════════════ */}
+        {isApprover && (
+          <>
+            <SectionLabel label="Overview" />
+            <NavItem to="/dashboard" icon="ti-layout-dashboard" label="Dashboard" />
+
+            <SectionLabel label="Accounts" />
+            <NavItem to="/accounts"  icon="ti-building-bank"   label="Accounts" />
+
+            <SectionLabel label="Transactions" />
+            <button
+              onClick={() => setTransactionsOpen(!transactionsOpen)}
+              className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
+            >
+              <div className="flex items-center gap-2.5">
+                <i className="ti ti-arrow-left-right text-lg" /> Transactions
+              </div>
+              <i className={`ti ti-chevron-down text-sm transition-transform
+                ${transactionsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {transactionsOpen && (
+              <div className="pl-3 flex flex-col gap-0.5 mt-0.5">
+                {[
+                  { to: '/transactions?tab=pending', icon: 'ti-clock', label: 'Pending Approval' },
+                  { to: '/transactions?tab=all',     icon: 'ti-list',  label: 'All Transactions' },
+                ].map(({ to, icon, label }) => (
+                  <NavLink key={to} to={to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
+                      ${isActive
+                        ? 'text-blue-400 font-medium'
+                        : 'text-white/45 hover:bg-white/10 hover:text-white'}`
+                    }>
+                    <i className={`ti ${icon} text-sm`} /> {label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+
+            <SectionLabel label="System" />
+            <NavItem to="/profile"  icon="ti-user"     label="My Profile" />
+            <NavItem to="/settings" icon="ti-settings" label="Settings" />
+          </>
+        )}
 
       </nav>
 
-      {/* User info + logout at bottom */}
+      {/* User info + logout */}
       <div className="px-3 py-4 border-t border-white/10">
         <div className="flex items-center gap-3 px-2 mb-3">
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold flex-shrink-0">
