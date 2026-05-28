@@ -46,23 +46,25 @@ export default function UserOnboarding() {
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersLoaded, setUsersLoaded]   = useState(false);
 
-  async function handleInvite(e) {
-    e.preventDefault();
-    setInviteError(''); setInviteSuccess('');
-    if (!invite.userEmail || !invite.role) {
-      setInviteError('Please enter email and select a role.'); return;
-    }
-    setInviteLoading(true);
-    try {
-      await api.post('/users/invitation', invite);
-      setInviteSuccess(`Invitation sent to ${invite.userEmail}!`);
-      setInvite({ userEmail: '', role: '' });
-    } catch (err) {
-      setInviteError(err.response?.data?.message || 'Failed to send invitation.');
-    } finally {
-      setInviteLoading(false);
-    }
-  }
+ async function handleInvite(e) {
+   e.preventDefault();
+   setInviteError(''); setInviteSuccess('');
+   if (!invite.userEmail || !invite.role) {
+     setInviteError('Please enter email and select a role.'); return;
+   }
+   setInviteLoading(true);
+   try {
+     await api.post('/users/invitation', invite);
+     setInviteSuccess(
+       `Invitation sent to ${invite.userEmail}! They will receive an email with a link to complete their registration at: ${window.location.origin}/complete-registration?token=THEIR_TOKEN`
+     );
+     setInvite({ userEmail: '', role: '' });
+   } catch (err) {
+     setInviteError(err.response?.data?.message || 'Failed to send invitation.');
+   } finally {
+     setInviteLoading(false);
+   }
+ }
 
   async function handleRegister(e) {
     e.preventDefault();
