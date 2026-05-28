@@ -32,18 +32,20 @@ export default function Users() {
   const [editSuccess, setEditSuccess] = useState('');
   const [editError, setEditError]     = useState('');
 
-  async function loadUsers() {
-    setLoading(true);
-    try {
-      const res = await api.get('/users/viewAll');
-      setUsers(res.data.data || []);
-      setLoaded(true);
-    } catch {
-      setUsers([]);
-    } finally {
-      setLoading(false);
-    }
-  }
+ async function loadUsers() {
+   setLoading(true);
+   try {
+     const res = await api.get('/users/viewAll');
+     // Filter out SUPER_ADMIN — ADMIN should not edit platform-level accounts
+     const filtered = (res.data.data || []).filter(u => u.role !== 'SUPER_ADMIN');
+     setUsers(filtered);
+     setLoaded(true);
+   } catch {
+     setUsers([]);
+   } finally {
+     setLoading(false);
+   }
+ }
 
   function openEdit(u) {
     setEditUser(u);
