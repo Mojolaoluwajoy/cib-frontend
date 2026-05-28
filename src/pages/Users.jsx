@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 function Pill({ status }) {
@@ -22,6 +23,7 @@ const EDITABLE_FIELDS = [
 ];
 
 export default function Users() {
+  const { user: currentUser } = useAuth();
   const [users, setUsers]           = useState([]);
   const [loading, setLoading]       = useState(false);
   const [loaded, setLoaded]         = useState(false);
@@ -32,20 +34,23 @@ export default function Users() {
   const [editSuccess, setEditSuccess] = useState('');
   const [editError, setEditError]     = useState('');
 
- async function loadUsers() {
-   setLoading(true);
-   try {
-     const res = await api.get('/users/viewAll');
-     // Filter out SUPER_ADMIN — ADMIN should not edit platform-level accounts
-     const filtered = (res.data.data || []).filter(u => u.role !== 'SUPER_ADMIN');
-     setUsers(filtered);
-     setLoaded(true);
-   } catch {
-     setUsers([]);
-   } finally {
-     setLoading(false);
-   }
- }
+  async function loadUsers() {
+    setLoading(true);
+    try {
+      const res = await api.get('/users/viewAll');
+      const allUsers = res.data.data || [];
+      // Never show SUPER_ADMIN in this list regardless of who is viewing
+      // ADMIN should only see their own org users — backend already handles this
+      // but we add a client-side safety filter too
+      const filtered = allUsers.filter(u => u.role !== 'SUPER_ADMIN');
+      setUsers(filtered);
+      setLoaded(true);
+    } catch {
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function openEdit(u) {
     setEditUser(u);
@@ -76,7 +81,10 @@ export default function Users() {
     selected.forEach(key => { body[key] = form[key]; });
     setEditLoading(true);
     try {
-      await api.put(`/users/${editUser.userId}/profile`, body);
+      // Use the user's ID — check what field your backend returns for the user ID
+      // it might be userId, id, or another field
+      const userId = editUser.userId || editUser.id;
+      await api.put(`/users/${userId}/profile`, body);
       setEditSuccess('Profile updated successfully!');
       setSelected([]);
       setForm({ firstName:'', lastName:'', email:'' });
@@ -96,7 +104,9 @@ export default function Users() {
           <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-sm font-semibold text-gray-900">All users</h2>
-              <p className="text-xs text-gray-500 mt-0.5">Users in your organization</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Users registered in your organization
+              </p>
             </div>
             <button onClick={loadUsers} disabled={loading}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
@@ -104,6 +114,7 @@ export default function Users() {
               {loaded ? 'Refresh' : 'Load users'}
             </button>
           </div>
+
           {!loaded ? (
             <div className="text-center py-12">
               <i className="ti ti-users text-3xl text-gray-200 block mb-2" />
@@ -124,7 +135,7 @@ export default function Users() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.filter(u => u.role !== 'SUPER_ADMIN').map((u, i) => (
+                  {users.map((u, i) => (
                     <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
                       <td className="px-3 py-3 font-medium text-gray-900">{u.firstName} {u.lastName}</td>
                       <td className="px-3 py-3 text-gray-500">{u.email}</td>
@@ -170,12 +181,27 @@ export default function Users() {
                 const isSel = selected.includes(key);
                 return (
                   <div key={key}
-                    className={`border rounded-xl p-4 transition-all ${isSel ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200'}`}>
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => toggleField(key)}>
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${isSel ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-                        {isSel && <i className="ti ti-check text-white" style={{ fontSize: '11px' }} />}
+                    className={`border rounded-xl p-4 transition-all cursor-pointer
+                      ${isSel ? 'border-blue-300 bg-blue-50/50' : 'border-gray-200 hover:border-gray-300'}`}
+                    onClick={() => !isSel && toggleField(key)}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3"
+                        onClick={e => { e.stopPropagation(); toggleField(key); }}>
+                        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all
+                          ${isSel ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+                          {isSel && <i className="ti ti-check text-white" style={{ fontSize: '11px' }} />}
+                        </div>
+                        <span className={`text-sm font-medium ${isSel ? 'text-blue-700' : 'text-gray-700'}`}>
+                          {label}
+                        </span>
                       </div>
-                      <span className={`text-sm font-medium ${isSel ? 'text-blue-700' : 'text-gray-700'}`}>{label}</span>
+                      {isSel && (
+                        <button type="button"
+                          onClick={e => { e.stopPropagation(); toggleField(key); }}
+                          className="text-xs text-gray-400 hover:text-red-500">
+                          Remove
+                        </button>
+                      )}
                     </div>
                     {isSel && (
                       <div className="mt-3" onClick={e => e.stopPropagation()}>
