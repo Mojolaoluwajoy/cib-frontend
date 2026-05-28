@@ -1,38 +1,68 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 
-// This creates a global "box" that holds the logged-in user's info
-// Any component anywhere in the app can reach into this box and read the info
 const AuthContext = createContext(null);
 
+const INACTIVITY_LIMIT = 60 * 60 * 1000; // 1 hour in milliseconds
+
 export function AuthProvider({ children }) {
-  // Initialize from localStorage so the user stays logged in on page refresh
-  const [user, setUser] = useState({
-    token: localStorage.getItem('cib_token'),
-    role:  localStorage.getItem('cib_role'),
-    name:  localStorage.getItem('cib_name'),
-    email: localStorage.getItem('cib_email'),
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('cib_user');
+      return stored ? JSON.parse(stored) : { token: null, role: null, name: null, email: null };
+    } catch {
+      return { token: null, role: null, name: null, email: null };
+    }
   });
 
-  // Called after successful login — saves everything to localStorage and state
-  const login = (userData) => {
-    const fullName = `${userData.firstName} ${userData.lastName}`;
-    localStorage.setItem('cib_token', userData.token);
-    localStorage.setItem('cib_role',  userData.role);
-    localStorage.setItem('cib_name',  fullName);
-    localStorage.setItem('cib_email', userData.email);
-    setUser({
-      token: userData.token,
-      role:  userData.role,
-      name:  fullName,
-      email: userData.email,
-    });
-  };
+  const inactivityTimer = useRef(null);
 
-  // Called when user clicks Sign Out — clears everything
-  const logout = () => {
-    localStorage.clear();
+  // ── Clear user from state and storage ──
+  const logout = useCallback(() => {
+    localStorage.removeItem('cib_user');
     setUser({ token: null, role: null, name: null, email: null });
-  };
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+  }, []);
+
+  // ── Reset the inactivity timer on any user activity ──
+  const resetTimer = useCallback(() => {
+    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    if (user?.token) {
+      inactivityTimer.current = setTimeout(() => {
+        logout();
+        window.location.href = '/login';
+      }, INACTIVITY_LIMIT);
+    }
+  }, [user?.token, logout]);
+
+  // ── Attach activity listeners when user is logged in ──
+  useEffect(() => {
+    if (!user?.token) return;
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+    events.forEach(e => window.addEventListener(e, resetTimer));
+
+    // Start timer immediately on mount
+    resetTimer();
+
+    return () => {
+      events.forEach(e => window.removeEventListener(e, resetTimer));
+      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    };
+  }, [user?.token, resetTimer]);
+
+  // ── Login — save user to state and localStorage ──
+  function login(data) {
+    // data comes from your LoginResponse
+    // it has: token, role, firstName, lastName, email
+    const userData = {
+      token: data.token,
+      role:  data.role,
+      name:  `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+      email: data.email,
+    };
+    localStorage.setItem('cib_user', JSON.stringify(userData));
+    setUser(userData);
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
@@ -41,6 +71,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// This is a custom hook — any page calls useAuth() to get user info
-// For example: const { user } = useAuth(); then use user.role, user.name etc
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}
