@@ -1,30 +1,41 @@
 import axios from 'axios';
 
-// This is the base URL for all API calls
-// Every request automatically goes to your Spring app on port 1990
 const api = axios.create({
   baseURL: 'http://localhost:1990',
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// This runs BEFORE every request
-// It automatically adds the JWT token to every API call
-// So you never have to manually add Authorization header in any page
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('cib_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// ── Request interceptor — attach JWT token to every request ──
+api.interceptors.request.use(
+  config => {
+    try {
+      const stored = localStorage.getItem('cib_user');
+      if (stored) {
+        const user = JSON.parse(stored);
+        if (user?.token) {
+          config.headers.Authorization = `Bearer ${user.token}`;
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
 
-// This runs AFTER every response
-// If your token has expired (401 error), it clears everything and sends you to login
-// This handles session expiry automatically across the whole app
+// ── Response interceptor — auto logout on 401 or 403 ──
+// This fires when:
+// 1. The user's account has been disabled
+// 2. The JWT token has expired
+// 3. The user no longer exists in the database
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.clear();
+  response => response,
+  error => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Clear stored user data
+      localStorage.removeItem('cib_user');
+      // Redirect to login — hard redirect clears all React state too
       window.location.href = '/login';
     }
     return Promise.reject(error);
