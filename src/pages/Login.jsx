@@ -35,6 +35,8 @@ export default function Login() {
       });
 
       const loginData = res.data.data || res.data;
+      console.log('loginData:', loginData);  // ← add this
+
       login(loginData);
       navigate('/dashboard');
 

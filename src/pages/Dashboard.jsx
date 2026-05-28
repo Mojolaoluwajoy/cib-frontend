@@ -65,10 +65,10 @@ function SuperAdminDashboard({ user }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user?.token) return;
     loadStats();
     loadOrgs();
-  }, []);
-
+  }, [user?.token]);
   // Calls /dashboard/stats — returns org counts for SUPER_ADMIN
   async function loadStats() {
     try {

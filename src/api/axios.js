@@ -1,41 +1,36 @@
 import axios from 'axios';
+import { tokenRef } from '../context/AuthContext';
 
 const api = axios.create({
   baseURL: 'http://localhost:1990',
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ── Request interceptor — attach JWT token to every request ──
 api.interceptors.request.use(
   config => {
-    try {
-      const stored = localStorage.getItem('cib_user');
-      if (stored) {
-        const user = JSON.parse(stored);
-        if (user?.token) {
-          config.headers.Authorization = `Bearer ${user.token}`;
-        }
-      }
-    } catch {
-      // ignore parse errors
+    let token = tokenRef.current;
+    if (!token) {
+      try {
+        const stored = localStorage.getItem('cib_user');
+        if (stored) token = JSON.parse(stored)?.token;
+      } catch {}
+    }
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   error => Promise.reject(error)
 );
 
-// ── Response interceptor — auto logout on 401 or 403 ──
-// This fires when:
-// 1. The user's account has been disabled
-// 2. The JWT token has expired
-// 3. The user no longer exists in the database
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      // Clear stored user data
+    const status = error.response?.status;
+    const url    = error.config?.url || '';
+    if (status === 401 && !url.includes('/auth/login')) {
+      tokenRef.current = null;
       localStorage.removeItem('cib_user');
-      // Redirect to login — hard redirect clears all React state too
       window.location.href = '/login';
     }
     return Promise.reject(error);
