@@ -38,6 +38,7 @@ export default function App() {
           <Route path="/login"           element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register"        element={<OrgOnboarding />} />
+           <Route path="/complete-registration" element={<CompleteRegistration />} />
 
           {/* Dashboard */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
