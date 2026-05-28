@@ -94,6 +94,9 @@ export default function Sidebar() {
             <SectionLabel label="Organizations" />
             <NavItem to="/org-onboarding" icon="ti-building-check"   label="Approvals"     />
 
+             <SectionLabel label="Users" />
+                 <NavItem to="/all-users"      icon="ti-users"            label="All Users"    />
+
             <SectionLabel label="System" />
             <NavItem to="/profile"        icon="ti-user"             label="My Profile"    />
             <NavItem to="/settings"       icon="ti-settings"         label="Settings"      />
