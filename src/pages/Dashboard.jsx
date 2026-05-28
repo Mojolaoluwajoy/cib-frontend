@@ -228,18 +228,15 @@ function SuperAdminDashboard({ user }) {
 // OPERATIONAL DASHBOARD (ADMIN, MAKER, APPROVER)
 // Shows accounts, transfer volumes, pending approvals
 // ══════════════════════════════════════════════════════
+
 function OperationalDashboard({ user }) {
-  // stats holds the numbers from /dashboard/stats
-  // these are: totalAccounts, pendingTransactions,
-  // transferVolume, payoutVolume
-  const [stats, setStats]               = useState(null);
+    const [orgDetails, setOrgDetails] = useState(null);
 
-  // transactions holds the actual recent transaction records
-  // for the recent transactions list — separate from stats
-  const [transactions, setTransactions] = useState([]);
+   const [stats, setStats]               = useState('');
 
-  // pending holds pending transactions for the pending list
-  const [pending, setPending]           = useState([]);
+    const [transactions, setTransactions] = useState([]);
+
+    const [pending, setPending]           = useState([]);
 
   const [loading, setLoading]           = useState(true);
 
@@ -249,8 +246,25 @@ function OperationalDashboard({ user }) {
     loadPending();
   }, []);
 
-  // ONE call to /dashboard/stats gives us all the numbers
-  // totalAccounts, pendingTransactions, transferVolume, payoutVolume
+    async function loadOrgDetails() {
+    try {
+      const res = await api.get('/organizations/viewAll');
+      const orgs = res.data.data || [];
+         if (orgs.length > 0) {
+        setOrgDetails(orgs[0]);
+      }
+    } catch {
+      setOrgDetails(null);
+    }
+  }
+
+  // Add loadOrgDetails() to the useEffect
+  useEffect(() => {
+    loadStats();
+    loadRecentTransactions();
+    loadPending();
+    loadOrgDetails();  // ← add this
+  }, []);
   async function loadStats() {
     try {
       const res = await api.get('/dashboard/stats');
@@ -262,9 +276,7 @@ function OperationalDashboard({ user }) {
     }
   }
 
-  // Separate call for the actual transaction records
-  // because stats only gives us numbers, not the list
-  async function loadRecentTransactions() {
+    async function loadRecentTransactions() {
     try {
       const res = await api.get('/transactions/transactions?page=0&size=4');
       setTransactions(res.data.data?.content || res.data.data || []);
@@ -287,7 +299,59 @@ function OperationalDashboard({ user }) {
 
   return (
     <main className="p-7 flex flex-col gap-6">
+{/* ── Dedicated virtual account card ── */}
+{orgDetails?.dvaAccountNumber && (
+  <div className="bg-slate-900 rounded-xl p-5">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+        <i className="ti ti-building-bank text-white text-sm" />
+      </div>
+      <div>
+        <div className="text-white text-sm font-semibold">
+          Your dedicated account
+        </div>
+        <div className="text-white/50 text-xs mt-0.5">
+          Anyone can transfer funds directly to this account
+        </div>
+      </div>
+    </div>
+    <div className="grid grid-cols-3 gap-4">
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Bank</div>
+        <div className="text-white text-sm font-semibold">
+          {orgDetails.dvaBankName || '—'}
+        </div>
+      </div>
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Account number</div>
+        <div className="text-white text-sm font-semibold font-mono tracking-wider">
+          {orgDetails.dvaAccountNumber || '—'}
+        </div>
+      </div>
+      <div className="bg-white/10 rounded-lg p-3">
+        <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Account name</div>
+        <div className="text-white text-sm font-semibold">
+          {orgDetails.name || '—'}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
+{/* Show message if org is approved but DVA not yet created */}
+{orgDetails && !orgDetails.dvaAccountNumber && (
+  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+    <i className="ti ti-clock text-amber-500 text-lg flex-shrink-0" />
+    <div>
+      <div className="text-amber-800 text-sm font-semibold">
+        Dedicated account pending
+      </div>
+      <div className="text-amber-600 text-xs mt-0.5">
+        Your dedicated virtual account will appear here once it has been created by the platform.
+      </div>
+    </div>
+  </div>
+)}
       {/* Metric cards — numbers come from stats object */}
       <div className={`grid gap-4 ${isApprover ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <MetricCard
