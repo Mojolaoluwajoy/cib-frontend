@@ -359,30 +359,34 @@ function OrgApprovalsTable() {
                   <tr key={i}
                     className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer"
                     onClick={() => openModal(org)}>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        {/* Process button — opens the approval modal */}
-                        <button
-                          onClick={e => { e.stopPropagation(); openModal(org); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-all">
-                          <i className="ti ti-check" /> Process
-                        </button>
-                        {/* View button — goes to OrgDetail page */}
-                        <Link
-                          to={`/organizations/${org.id}`}
-                          onClick={e => e.stopPropagation()}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all">
-                          <i className="ti ti-eye" /> View
-                        </Link>
-                        {/* Edit button — goes to EditOrganization page */}
-                        <Link
-                          to={`/organizations/${org.id}/edit`}
-                          onClick={e => e.stopPropagation()}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-all">
-                          <i className="ti ti-pencil" /> Edit
-                        </Link>
-                      </div>
-                    </td>
+                   <td className="px-3 py-3">
+                     <div className="flex items-center gap-2">
+                       {/* Process button — only clickable if status is PENDING */}
+                       {(org.organizationStatus || '').toUpperCase() === 'PENDING' ? (
+                         <button
+                           onClick={e => { e.stopPropagation(); openModal(org); }}
+                           className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-all">
+                           <i className="ti ti-check" /> Process
+                         </button>
+                       ) : (
+                         <span className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-400 text-xs font-semibold rounded-lg cursor-not-allowed">
+                           <i className="ti ti-circle-check" /> Processed
+                         </span>
+                       )}
+                       <Link
+                         to={`/organizations/${org.id}`}
+                         onClick={e => e.stopPropagation()}
+                         className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all">
+                         <i className="ti ti-building" /> Open
+                       </Link>
+                       <Link
+                         to={`/organizations/${org.id}/edit`}
+                         onClick={e => e.stopPropagation()}
+                         className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-semibold rounded-lg hover:bg-amber-50 hover:text-amber-700 transition-all">
+                         <i className="ti ti-pencil" /> Edit
+                       </Link>
+                     </div>
+                   </td>
 
                       </tr>
                 ))}
