@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, Link } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
@@ -42,13 +42,11 @@ export default function Sidebar() {
     );
   }
 
-  function TransactionDropdown({ links }) {
+  function TxnDropdown({ links }) {
     return (
       <>
-        <button
-          onClick={() => setTransactionsOpen(!transactionsOpen)}
-          className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
-        >
+        <button onClick={() => setTransactionsOpen(!transactionsOpen)}
+          className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full">
           <div className="flex items-center gap-2.5">
             <i className="ti ti-arrow-left-right text-lg" /> Transactions
           </div>
@@ -80,32 +78,35 @@ export default function Sidebar() {
         <div className="text-white/40 text-xs mt-1">Corporate Internet Banking</div>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
 
-        {/* ══════════════════════════════ */}
-        {/* SUPER_ADMIN                    */}
-        {/* ══════════════════════════════ */}
+        {/* ═══════════════════════════ */}
+        {/* SUPER_ADMIN                 */}
+        {/* ═══════════════════════════ */}
         {isSuperAdmin && (
           <>
             <SectionLabel label="Overview" />
-            <NavItem to="/dashboard"      icon="ti-layout-dashboard" label="Dashboard"     />
+            <NavItem to="/dashboard"      icon="ti-layout-dashboard" label="Dashboard"      />
 
             <SectionLabel label="Organizations" />
-            <NavItem to="/org-onboarding" icon="ti-building-check"   label="Approvals"     />
+            {/* Approvals — process pending orgs */}
+            <NavItem to="/org-onboarding" icon="ti-building-check"   label="Approvals"      />
+            {/* Organizations — view all orgs, click into each to manage on behalf */}
+            <NavItem to="/organizations"  icon="ti-building"         label="Organizations"  />
 
-             <SectionLabel label="Users" />
-                 <NavItem to="/all-users"      icon="ti-users"            label="All Users"    />
+            <SectionLabel label="Users" />
+            {/* All users — view every user across all orgs */}
+            <NavItem to="/all-users"      icon="ti-users"            label="All Users"      />
 
             <SectionLabel label="System" />
-            <NavItem to="/profile"        icon="ti-user"             label="My Profile"    />
-            <NavItem to="/settings"       icon="ti-settings"         label="Settings"      />
+            <NavItem to="/profile"        icon="ti-user"             label="My Profile"     />
+            <NavItem to="/settings"       icon="ti-settings"         label="Settings"       />
           </>
         )}
 
-        {/* ══════════════════════════════ */}
-        {/* ADMIN                          */}
-        {/* ══════════════════════════════ */}
+        {/* ═══════════════════════════ */}
+        {/* ADMIN                       */}
+        {/* ═══════════════════════════ */}
         {isAdmin && (
           <>
             <SectionLabel label="Overview" />
@@ -117,7 +118,7 @@ export default function Sidebar() {
             <NavItem to="/accounts"        icon="ti-building-bank"    label="Accounts"        />
 
             <SectionLabel label="Transactions" />
-            <TransactionDropdown links={[
+            <TxnDropdown links={[
               { to: '/transactions?tab=internal', icon: 'ti-refresh', label: 'Internal Transfer' },
               { to: '/transactions?tab=payout',   icon: 'ti-send',   label: 'External Payout'   },
               { to: '/transactions?tab=funding',  icon: 'ti-cash',   label: 'External Funding'  },
@@ -131,9 +132,9 @@ export default function Sidebar() {
           </>
         )}
 
-        {/* ══════════════════════════════ */}
-        {/* MAKER                          */}
-        {/* ══════════════════════════════ */}
+        {/* ═══════════════════════════ */}
+        {/* MAKER                       */}
+        {/* ═══════════════════════════ */}
         {isMaker && (
           <>
             <SectionLabel label="Overview" />
@@ -143,7 +144,7 @@ export default function Sidebar() {
             <NavItem to="/accounts"  icon="ti-building-bank"   label="Accounts"  />
 
             <SectionLabel label="Transactions" />
-            <TransactionDropdown links={[
+            <TxnDropdown links={[
               { to: '/transactions?tab=internal', icon: 'ti-refresh', label: 'Internal Transfer' },
               { to: '/transactions?tab=payout',   icon: 'ti-send',   label: 'External Payout'   },
               { to: '/transactions?tab=funding',  icon: 'ti-cash',   label: 'External Funding'  },
@@ -155,9 +156,9 @@ export default function Sidebar() {
           </>
         )}
 
-        {/* ══════════════════════════════ */}
-        {/* APPROVER                       */}
-        {/* ══════════════════════════════ */}
+        {/* ═══════════════════════════ */}
+        {/* APPROVER                    */}
+        {/* ═══════════════════════════ */}
         {isApprover && (
           <>
             <SectionLabel label="Overview" />
@@ -167,9 +168,9 @@ export default function Sidebar() {
             <NavItem to="/accounts"  icon="ti-building-bank"   label="Accounts"  />
 
             <SectionLabel label="Transactions" />
-            <TransactionDropdown links={[
-              { to: '/transactions?tab=pending', icon: 'ti-clock', label: 'Pending Approval'  },
-              { to: '/transactions?tab=all',     icon: 'ti-list',  label: 'All Transactions'  },
+            <TxnDropdown links={[
+              { to: '/transactions?tab=pending', icon: 'ti-clock', label: 'Pending Approval' },
+              { to: '/transactions?tab=all',     icon: 'ti-list',  label: 'All Transactions' },
             ]} />
 
             <SectionLabel label="System" />
