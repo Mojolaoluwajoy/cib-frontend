@@ -61,7 +61,6 @@ export default function Accounts() {
      const res = await api.post('/accounts/create', {
        type:         form.type,
        currencyCode: form.currencyCode,
-       // DO NOT send organizationId — backend gets org from logged-in user's JWT
      });
      setCreateSuccess(
        `Account created! Number: ${res.data.data?.accountNumber || '—'}`
