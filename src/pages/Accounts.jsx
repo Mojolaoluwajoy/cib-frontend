@@ -50,27 +50,29 @@ export default function Accounts() {
   const [accsLoading, setAccsLoading] = useState(false);
   const [accsLoaded, setAccsLoaded]   = useState(false);
 
-  async function handleCreate(e) {
-    e.preventDefault();
-    setCreateError(''); setCreateSuccess('');
-    if (!form.type || !form.currencyCode) {
-      setCreateError('Please fill in all fields.'); return;
-    }
-    setCreateLoading(true);
-    try {
-      const res = await api.post('/accounts/create', {
-        type: form.type,
-        currencyCode: { currencyCode: form.currencyCode },
-      });
-      setCreateSuccess(`Account created! Number: ${res.data.data?.accountNumber || '—'}`);
-      setForm({ type:'', currencyCode:'', organizationId:'', createdBy:'' });
-    } catch (err) {
-      setCreateError(err.response?.data?.message || 'Failed to create account.');
-    } finally {
-      setCreateLoading(false);
-    }
-  }
-
+ async function handleCreate(e) {
+   e.preventDefault();
+   setCreateError(''); setCreateSuccess('');
+   if (!form.type || !form.currencyCode) {
+     setCreateError('Please select both account type and currency.'); return;
+   }
+   setCreateLoading(true);
+   try {
+     const res = await api.post('/accounts/create', {
+       type: form.type,
+       currencyCode: { currencyCode: form.currencyCode },
+       // Do NOT send organizationId — backend gets it from the logged-in user's token
+     });
+     setCreateSuccess(
+       `Account created successfully! Account number: ${res.data.data?.accountNumber || '—'}`
+     );
+     setForm({ type: '', currencyCode: '' });
+   } catch (err) {
+     setCreateError(err.response?.data?.message || 'Failed to create account.');
+   } finally {
+     setCreateLoading(false);
+   }
+ }
   async function handleFind(e) {
     e.preventDefault();
     setFindError(''); setFindResult(null);
