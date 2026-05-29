@@ -127,12 +127,9 @@ export default function OrgDetail() {
     }
     setAccLoading(true);
     try {
-      const res = await api.post('/accounts/create', {
-        type: accForm.type,
-        currencyCode: { currencyCode: accForm.currencyCode },
-        // organizationId sent so backend knows which org this is for
-        // when SUPER_ADMIN creates account on behalf of an org
-        organizationId: orgId,
+      const res = await api.post(`/accounts/create/${id}`, {
+        type:         accForm.type,
+        currencyCode: accForm.currencyCode,
       });
       setAccSuccess(`Account created! Number: ${res.data.data?.accountNumber || '—'}`);
       setAccForm({ type: '', currencyCode: '' });
@@ -144,7 +141,6 @@ export default function OrgDetail() {
       setAccLoading(false);
     }
   }
-
   async function handleInvite(e) {
     e.preventDefault();
     setInviteError(''); setInviteSuccess('');
