@@ -99,18 +99,18 @@ export default function OrgDetail() {
       if (txnRes.status === 'fulfilled')
         setTxns(txnRes.value.data.data?.content || txnRes.value.data.data || []);
 
-      if (usrRes.status === 'fulfilled') {
-        const allUsers = usrRes.value.data.data || [];
-        // Filter to only users belonging to this org
-        // UserResponse has organizationId which is an OrganizationId object with an id field
-        // Also exclude SUPER_ADMIN
-        const orgUsers = allUsers.filter(u => {
-          if (u.role === 'SUPER_ADMIN') return false;
-          const userOrgId = u.organizationId?.id || u.organizationId;
-          return Number(userOrgId) === orgId;
-        });
-        setUsers(orgUsers);
-      }
+     if (usrRes.status === 'fulfilled') {
+       const allUsers = usrRes.value.data.data || [];
+       const orgUsers = allUsers.filter(u => {
+         if (u.role === 'SUPER_ADMIN') return false;
+         // OrganizationId has field 'id' — use == not === to avoid type mismatch
+         // between Java Long and JavaScript number
+         const userOrgId = u.organizationId?.id;
+         // eslint-disable-next-line eqeqeq
+         return userOrgId == orgId;
+       });
+       setUsers(orgUsers);
+     }
     } catch (err) {
       console.error('Failed to load org detail:', err);
       setOrg(null);
