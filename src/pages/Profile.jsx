@@ -56,53 +56,45 @@ export default function Profile() {
     }
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(''); setSuccess('');
+ async function handleSubmit(e) {
+   e.preventDefault();
+   setError(''); setSuccess('');
 
-    if (selected.length === 0) {
-      setError('Please select at least one field to update.'); return;
-    }
+   if (selected.length === 0) {
+     setError('Please select at least one field to update.'); return;
+   }
+   if (selected.some(key => !form[key])) {
+     setError('Please fill in all selected fields or deselect them.'); return;
+   }
 
-    // Build request body with only selected fields
-    const body = {};
-    selected.forEach(key => {
-      if (!form[key]) {
-        setError(`Please fill in the ${key} field or deselect it.`);
-        return;
-      }
-      body[key] = form[key];
-    });
+   const body = {};
+   selected.forEach(key => { body[key] = form[key]; });
 
-    // Make sure all selected fields have values
-    if (selected.some(key => !form[key])) return;
+   setLoading(true);
+   try {
+     const res = await api.put('/users/profile', body);
+     const updated = res.data.data;
 
-    setLoading(true);
-    try {
-      const res = await api.put('/users/profile', body);
-      const updated = res.data.data;
+     // Update auth context so sidebar name reflects changes immediately
+     // Preserve the existing token and role — only update name and email
+     login({
+       token:     user.token,
+       role:      user.role,
+       firstName: updated.firstName || user.name?.split(' ')[0] || '',
+       lastName:  updated.lastName  || user.name?.split(' ')[1] || '',
+       email:     updated.email     || user.email,
+     });
 
-      // Update the auth context with new name/email
-      // so the sidebar reflects the change immediately
-      login({
-        ...updated,
-        token:     user.token,
-        role:      user.role,
-        firstName: updated.firstName,
-        lastName:  updated.lastName,
-        email:     updated.email,
-      });
+     setSuccess('Profile updated successfully!');
+     setSelected([]);
+     setForm({ firstName: '', lastName: '', email: '' });
 
-      setSuccess('Profile updated successfully!');
-      setSelected([]);
-      setForm({ firstName: '', lastName: '', email: '' });
-
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile.');
-    } finally {
-      setLoading(false);
-    }
-  }
+   } catch (err) {
+     setError(err.response?.data?.message || 'Failed to update profile. Please try again.');
+   } finally {
+     setLoading(false);
+   }
+ }
 
   return (
     <Layout>

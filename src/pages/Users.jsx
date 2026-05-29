@@ -68,33 +68,35 @@ export default function Users() {
     }
   }
 
-  async function handleUpdate(e) {
-    e.preventDefault();
-    setEditError(''); setEditSuccess('');
-    if (selected.length === 0) {
-      setEditError('Please select at least one field to update.'); return;
-    }
-    if (selected.some(key => !form[key])) {
-      setEditError('Please fill in all selected fields.'); return;
-    }
-    const body = {};
-    selected.forEach(key => { body[key] = form[key]; });
-    setEditLoading(true);
-    try {
-      // Use the user's ID — check what field your backend returns for the user ID
-      // it might be userId, id, or another field
-      const userId = editUser.userId || editUser.id;
-      await api.put(`/users/${userId}/profile`, body);
-      setEditSuccess('Profile updated successfully!');
-      setSelected([]);
-      setForm({ firstName:'', lastName:'', email:'' });
-      loadUsers();
-    } catch (err) {
-      setEditError(err.response?.data?.message || 'Failed to update profile.');
-    } finally {
-      setEditLoading(false);
-    }
-  }
+ async function handleUpdate(e) {
+   e.preventDefault();
+   setEditError(''); setEditSuccess('');
+
+   if (selected.length === 0) {
+     setEditError('Please select at least one field to update.'); return;
+   }
+   if (selected.some(key => !form[key])) {
+     setEditError('Please fill in all selected fields.'); return;
+   }
+
+   const body = {};
+   selected.forEach(key => { body[key] = form[key]; });
+
+   setEditLoading(true);
+   try {
+     // userId in UserResponse is a String — use it directly
+     const userId = editUser.userId || editUser.id;
+     await api.put(`/users/${userId}/profile`, body);
+     setEditSuccess('Profile updated successfully!');
+     setSelected([]);
+     setForm({ firstName: '', lastName: '', email: '' });
+     loadUsers();
+   } catch (err) {
+     setEditError(err.response?.data?.message || 'Failed to update profile.');
+   } finally {
+     setEditLoading(false);
+   }
+ }
 
   return (
     <Layout>
