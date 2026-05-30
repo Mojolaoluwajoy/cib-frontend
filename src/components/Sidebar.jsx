@@ -83,26 +83,49 @@ export default function Sidebar() {
         {/* ═══════════════════════════ */}
         {/* SUPER_ADMIN                 */}
         {/* ═══════════════════════════ */}
-        {isSuperAdmin && (
-          <>
-            <SectionLabel label="Overview" />
-            <NavItem to="/dashboard"      icon="ti-layout-dashboard" label="Dashboard"      />
+           {isSuperAdmin && (
+             <>
+               <SectionLabel label="Overview" />
+               <NavItem to="/dashboard" icon="ti-layout-dashboard" label="Dashboard" />
 
-            <SectionLabel label="Organizations" />
-            {/* Approvals — process pending orgs */}
-            <NavItem to="/org-onboarding" icon="ti-building-check"   label="Approvals"      />
-            {/* Organizations — view all orgs, click into each to manage on behalf */}
-            <NavItem to="/organizations"  icon="ti-building"         label="Organizations"  />
+               <SectionLabel label="Organizations" />
+               <NavItem to="/org-onboarding" icon="ti-building-check" label="Approvals" />
 
-            <SectionLabel label="Users" />
-            {/* All users — view every user across all orgs */}
-            <NavItem to="/all-users"      icon="ti-users"            label="All Users"      />
+               {/* Organizations — uses end prop so it only highlights on exact /organizations */}
+               <NavLink
+                 to="/organizations"
+                 end
+                 className={({ isActive }) =>
+                   `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
+                   ${isActive
+                     ? 'bg-blue-600 text-white font-medium'
+                     : 'text-white/55 hover:bg-white/10 hover:text-white'}`
+                 }
+               >
+                 <i className="ti ti-building text-lg" /> Organizations
+               </NavLink>
 
-            <SectionLabel label="System" />
-            <NavItem to="/profile"        icon="ti-user"             label="My Profile"     />
-            <NavItem to="/settings"       icon="ti-settings"         label="Settings"       />
-          </>
-        )}
+               <SectionLabel label="Users" />
+
+               {/* All Users — uses end prop so it only highlights on exact /all-users */}
+               <NavLink
+                 to="/all-users"
+                 end
+                 className={({ isActive }) =>
+                   `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
+                   ${isActive
+                     ? 'bg-blue-600 text-white font-medium'
+                     : 'text-white/55 hover:bg-white/10 hover:text-white'}`
+                 }
+               >
+                 <i className="ti ti-users text-lg" /> All Users
+               </NavLink>
+
+               <SectionLabel label="System" />
+               <NavItem to="/profile"  icon="ti-user"     label="My Profile" />
+               <NavItem to="/settings" icon="ti-settings" label="Settings"   />
+             </>
+           )}
 
         {/* ═══════════════════════════ */}
         {/* ADMIN                       */}
