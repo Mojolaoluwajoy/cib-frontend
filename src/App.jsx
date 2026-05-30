@@ -12,6 +12,7 @@ import Transactions         from './pages/Transactions';
 import Profile              from './pages/Profile';
 import Users                from './pages/Users';
 import AllUsers             from './pages/AllUsers';
+import Organizations        from './pages/Organizations';
 import OrgDetail            from './pages/OrgDetail';
 import EditOrganization     from './pages/EditOrganization';
 import SettingsMenu         from './pages/settings/SettingsMenu';
