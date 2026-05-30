@@ -41,88 +41,91 @@ export default function App() {
 
           {/* ── Dashboard ── */}
           <Route path="/dashboard" element={
-            <ProtectedRoute><Dashboard /></ProtectedRoute>
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
           }/>
 
-          {/* ── Org onboarding ── */}
+          {/* ── Org onboarding — SUPER_ADMIN approvals + public registration ── */}
           <Route path="/org-onboarding" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN','ADMIN']}>
               <OrgOnboarding />
             </ProtectedRoute>
           }/>
 
-          {/* ── SUPER_ADMIN: organizations list ── */}
+          {/* ── SUPER_ADMIN: organizations list with search and filter ── */}
           <Route path="/organizations" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
               <Organizations />
             </ProtectedRoute>
           }/>
 
-          {/* ── SUPER_ADMIN: all users ── */}
-          <Route path="/all-users" element={
-            <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
-              <AllUsers />
-            </ProtectedRoute>
-          }/>
-
-          {/* ── SUPER_ADMIN: org detail ── */}
+          {/* ── SUPER_ADMIN: manage a specific org on their behalf ── */}
           <Route path="/organizations/:id" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
               <OrgDetail />
             </ProtectedRoute>
           }/>
 
-          {/* ── SUPER_ADMIN: edit org ── */}
+          {/* ── SUPER_ADMIN: edit a specific org ── */}
           <Route path="/organizations/:id/edit" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
               <EditOrganization />
             </ProtectedRoute>
           }/>
 
-          {/* ── User onboarding ── */}
+          {/* ── User onboarding — ADMIN sends invitations ── */}
           <Route path="/user-onboarding" element={
-            <ProtectedRoute allowedRoles={['ADMIN','SUPER_ADMIN']}>
+            <ProtectedRoute allowedRoles={['ADMIN']}>
               <UserOnboarding />
             </ProtectedRoute>
           }/>
 
-          {/* ── Users ── */}
+          {/* ── Users — ADMIN sees only their own org users ── */}
           <Route path="/users" element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <Users />
             </ProtectedRoute>
           }/>
 
-          {/* ── All users — SUPER_ADMIN only ── */}
+          {/* ── All users — SUPER_ADMIN sees all users across all orgs ── */}
           <Route path="/all-users" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
               <AllUsers />
             </ProtectedRoute>
           }/>
 
-          {/* ── Accounts ── */}
+          {/* ── Accounts — ADMIN, MAKER, APPROVER ── */}
           <Route path="/accounts" element={
-            <ProtectedRoute allowedRoles={['ADMIN','SUPER_ADMIN','MAKER','APPROVER']}>
+            <ProtectedRoute allowedRoles={['ADMIN','MAKER','APPROVER']}>
               <Accounts />
             </ProtectedRoute>
           }/>
 
-          {/* ── Transactions ── */}
+          {/* ── Transactions — all logged in users ── */}
           <Route path="/transactions" element={
-            <ProtectedRoute><Transactions /></ProtectedRoute>
+            <ProtectedRoute>
+              <Transactions />
+            </ProtectedRoute>
           }/>
 
-          {/* ── Profile ── */}
+          {/* ── Profile — all logged in users ── */}
           <Route path="/profile" element={
-            <ProtectedRoute><Profile /></ProtectedRoute>
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
           }/>
 
           {/* ── Settings ── */}
           <Route path="/settings" element={
-            <ProtectedRoute><SettingsMenu /></ProtectedRoute>
+            <ProtectedRoute>
+              <SettingsMenu />
+            </ProtectedRoute>
           }/>
           <Route path="/settings/password" element={
-            <ProtectedRoute><SettingsPassword /></ProtectedRoute>
+            <ProtectedRoute>
+              <SettingsPassword />
+            </ProtectedRoute>
           }/>
           <Route path="/settings/currency" element={
             <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
@@ -130,7 +133,7 @@ export default function App() {
             </ProtectedRoute>
           }/>
 
-          {/* ── Defaults ── */}
+          {/* ── Catch all ── */}
           <Route path="/"  element={<Navigate to="/dashboard" replace />} />
           <Route path="*"  element={<Navigate to="/dashboard" replace />} />
 
