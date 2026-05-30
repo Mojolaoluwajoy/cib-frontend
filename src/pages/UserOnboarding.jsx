@@ -88,7 +88,9 @@ export default function UserOnboarding() {
     setUsersLoading(true);
     try {
       const res = await api.get('/users/viewAll');
-      setUsers(res.data.data || []);
+      const filtered = (res.data.data || [])
+        .filter(u => u.role !== 'SUPER_ADMIN');
+      setUsers(filtered);
       setUsersLoaded(true);
     } catch {
       setUsers([]);
@@ -293,7 +295,7 @@ export default function UserOnboarding() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((u, i) => (
+                   {users.filter(u => u.role !== 'SUPER_ADMIN').map((u, i) => (
                       <tr key={i} className="border-b border-gray-50 hover:bg-gray-50">
                         <td className="px-3 py-3 font-medium text-gray-900">
                           {u.firstName} {u.lastName}
