@@ -99,18 +99,17 @@ export default function OrgDetail() {
       if (txnRes.status === 'fulfilled')
         setTxns(txnRes.value.data.data?.content || txnRes.value.data.data || []);
 
-     if (usrRes.status === 'fulfilled') {
-       const allUsers = usrRes.value.data.data || [];
-       const orgUsers = allUsers.filter(u => {
-         if (u.role === 'SUPER_ADMIN') return false;
-         // OrganizationId has field 'id' — use == not === to avoid type mismatch
-         // between Java Long and JavaScript number
-         const userOrgId = u.organizationId?.id;
-         // eslint-disable-next-line eqeqeq
-         return userOrgId == orgId;
-       });
-       setUsers(orgUsers);
-     }
+    if (usrRes.status === 'fulfilled') {
+      const allUsers = usrRes.value.data.data || [];
+      const orgUsers = allUsers.filter(u => {
+        if (u.role === 'SUPER_ADMIN') return false;
+        // Convert both sides to String for safe comparison
+        // id from URL params is a string, id from Java is a Long
+        const userOrgId = String(u.organizationId?.id ?? '');
+        return userOrgId !== '' && userOrgId === String(id);
+      });
+      setUsers(orgUsers);
+    }
     } catch (err) {
       console.error('Failed to load org detail:', err);
       setOrg(null);
