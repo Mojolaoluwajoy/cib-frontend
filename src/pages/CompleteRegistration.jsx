@@ -28,9 +28,11 @@ function PasswordField({ label, value, onChange, placeholder }) {
 }
 
 export default function CompleteRegistration() {
-  const [searchParams] = useSearchParams();
-  const navigate       = useNavigate();
-  const tokenFromUrl   = searchParams.get('token') || '';
+ const [searchParams] = useSearchParams();
+ const navigate       = useNavigate();
+ const rawToken       = searchParams.get('token') || '';
+ const tokenFromUrl   = rawToken.replace(/ /g, '+');
+
 
   const [form, setForm] = useState({
     token:     tokenFromUrl,
