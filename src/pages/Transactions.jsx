@@ -11,6 +11,7 @@ function Pill({ status }) {
     SUCCESS:   'bg-green-50 text-green-700',
     COMPLETED: 'bg-green-50 text-green-700',
     PENDING:   'bg-amber-50 text-amber-700',
+    PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
     AWAITING_APPROVAL: 'bg-amber-50 text-amber-700',
     REJECTED:  'bg-red-50 text-red-700',
     FAILED:    'bg-red-50 text-red-700',
