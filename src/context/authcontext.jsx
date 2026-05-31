@@ -1,16 +1,24 @@
-import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 
 const AuthContext = createContext(null);
 
-const INACTIVITY_LIMIT = 60 * 60 * 1000;
-
-export const tokenRef = { current: null };
+// 30 minutes in milliseconds
+const INACTIVITY_LIMIT = 30 * 60 * 1000;
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('cib_user');
-      return stored ? JSON.parse(stored) : { token: null, role: null, name: null, email: null };
+      return stored
+        ? JSON.parse(stored)
+        : { token: null, role: null, name: null, email: null };
     } catch {
       return { token: null, role: null, name: null, email: null };
     }
@@ -18,52 +26,70 @@ export function AuthProvider({ children }) {
 
   const inactivityTimer = useRef(null);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('cib_user');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        tokenRef.current = parsed?.token || null;
-      }
-    } catch {}
-  }, []);
-
-  const logout = useCallback(() => {
-    tokenRef.current = null;
+  // ── Clear everything and redirect to login ──
+  const logout = useCallback((reason) => {
     localStorage.removeItem('cib_user');
     setUser({ token: null, role: null, name: null, email: null });
-    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+    // Only redirect if we're not already on a public page
+    const publicPaths = ['/login', '/register',
+      '/forgot-password', '/complete-registration'];
+    const isPublic = publicPaths.some(p =>
+      window.location.pathname.startsWith(p)
+    );
+    if (!isPublic) {
+      window.location.href = '/login';
+    }
   }, []);
 
+  // ── Reset inactivity timer on any user activity ──
   const resetTimer = useCallback(() => {
-    if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
     if (user?.token) {
       inactivityTimer.current = setTimeout(() => {
-        logout();
-        window.location.href = '/login';
+        logout('inactivity');
       }, INACTIVITY_LIMIT);
     }
   }, [user?.token, logout]);
 
+  // ── Attach activity listeners when logged in ──
   useEffect(() => {
     if (!user?.token) return;
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+    const events = [
+      'mousedown',
+      'keydown',
+      'scroll',
+      'touchstart',
+      'click',
+      'mousemove',
+    ];
+
     events.forEach(e => window.addEventListener(e, resetTimer));
+
+    // Start the timer immediately
     resetTimer();
+
     return () => {
       events.forEach(e => window.removeEventListener(e, resetTimer));
-      if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
+      if (inactivityTimer.current) {
+        clearTimeout(inactivityTimer.current);
+      }
     };
   }, [user?.token, resetTimer]);
 
+  // ── Login ──
   function login(data) {
     const userData = {
-      token: data.token,
-      role:  data.role,
-      name:  `${data.firstName || ''} ${data.lastName || ''}`.trim(),
-      email: data.email,
+      token:     data.token,
+      role:      data.role,
+      name:      `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+      email:     data.email,
     };
-    tokenRef.current = data.token;
     localStorage.setItem('cib_user', JSON.stringify(userData));
     setUser(userData);
   }
