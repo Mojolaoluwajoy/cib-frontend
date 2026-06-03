@@ -79,6 +79,20 @@ function Flow({ steps }) {
   );
 }
 
+ function Field({ label, value, onChange, type = 'text', placeholder, full }) {
+    return (
+      <div className={`flex flex-col gap-1.5 ${full ? 'col-span-2' : ''}`}>
+        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          {label}
+        </label>
+        <input type={type} value={value} onChange={onChange}
+          placeholder={placeholder}
+          className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300" />
+      </div>
+    );
+  }
+
+
 export default function Transactions() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -327,18 +341,11 @@ export default function Transactions() {
     }
   }
 
-  function Field({ label, value, onChange, type = 'text', placeholder, full }) {
-    return (
-      <div className={`flex flex-col gap-1.5 ${full ? 'col-span-2' : ''}`}>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          {label}
-        </label>
-        <input type={type} value={value} onChange={onChange}
-          placeholder={placeholder}
-          className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300" />
-      </div>
-    );
-  }
+
+
+
+
+
 
   return (
     <Layout>
