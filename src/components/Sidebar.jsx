@@ -130,30 +130,21 @@ export default function Sidebar() {
         {/* ═══════════════════════════ */}
         {/* ADMIN                       */}
         {/* ═══════════════════════════ */}
-        {isAdmin && (
-          <>
-            <SectionLabel label="Overview" />
-            <NavItem to="/dashboard"       icon="ti-layout-dashboard" label="Dashboard"       />
+       {isAdmin && (
+         <>
+           <SectionLabel label="Overview" />
+           <NavItem to="/dashboard"       icon="ti-layout-dashboard" label="Dashboard"       />
 
-            <SectionLabel label="Organization" />
-            <NavItem to="/user-onboarding" icon="ti-user-plus"        label="User Onboarding" />
-            <NavItem to="/users"           icon="ti-users"            label="Users"           />
-            <NavItem to="/accounts"        icon="ti-building-bank"    label="Accounts"        />
+           <SectionLabel label="Organization" />
+           <NavItem to="/user-onboarding" icon="ti-user-plus"        label="User Onboarding" />
+           <NavItem to="/users"           icon="ti-users"            label="Users"           />
+           <NavItem to="/accounts"        icon="ti-building-bank"    label="Accounts"        />
 
-            <SectionLabel label="Transactions" />
-            <TxnDropdown links={[
-              { to: '/transactions?tab=internal', icon: 'ti-refresh', label: 'Internal Transfer' },
-              { to: '/transactions?tab=payout',   icon: 'ti-send',   label: 'External Payout'   },
-              { to: '/transactions?tab=funding',  icon: 'ti-cash',   label: 'External Funding'  },
-              { to: '/transactions?tab=pending',  icon: 'ti-clock',  label: 'Pending Approval'  },
-              { to: '/transactions?tab=all',      icon: 'ti-list',   label: 'All Transactions'  },
-            ]} />
-
-            <SectionLabel label="System" />
-            <NavItem to="/profile"         icon="ti-user"             label="My Profile"      />
-            <NavItem to="/settings"        icon="ti-settings"         label="Settings"        />
-          </>
-        )}
+           <SectionLabel label="System" />
+           <NavItem to="/profile"         icon="ti-user"             label="My Profile"      />
+           <NavItem to="/settings"        icon="ti-settings"         label="Settings"        />
+         </>
+       )}
 
         {/* ═══════════════════════════ */}
         {/* MAKER                       */}
