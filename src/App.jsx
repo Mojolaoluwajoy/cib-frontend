@@ -104,7 +104,7 @@ export default function App() {
 
           {/* ── Transactions — all logged in users ── */}
           <Route path="/transactions" element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['MAKER','APPROVER','SUPER_ADMIN']}>
               <Transactions />
             </ProtectedRoute>
           }/>
