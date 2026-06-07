@@ -103,11 +103,11 @@ export default function App() {
           }/>
 
           {/* ── Transactions — all logged in users ── */}
-          <Route path="/transactions" element={
-            <ProtectedRoute allowedRoles={['MAKER','APPROVER','SUPER_ADMIN']}>
-              <Transactions />
-            </ProtectedRoute>
-          }/>
+         <Route path="/transactions" element={
+           <ProtectedRoute allowedRoles={['MAKER','APPROVER','ADMIN','SUPER_ADMIN']}>
+             <Transactions />
+           </ProtectedRoute>
+         }/>
 
           {/* ── Profile — all logged in users ── */}
           <Route path="/profile" element={
