@@ -140,6 +140,12 @@ export default function Sidebar() {
            <NavItem to="/users"           icon="ti-users"            label="Users"           />
            <NavItem to="/accounts"        icon="ti-building-bank"    label="Accounts"        />
 
+           <SectionLabel label="Transactions" />
+           <TxnDropdown links={[
+             { to: '/transactions?tab=pending', icon: 'ti-clock', label: 'Pending Approval' },
+             { to: '/transactions?tab=all',     icon: 'ti-list',  label: 'All Transactions' },
+           ]} />
+
            <SectionLabel label="System" />
            <NavItem to="/profile"         icon="ti-user"             label="My Profile"      />
            <NavItem to="/settings"        icon="ti-settings"         label="Settings"        />
