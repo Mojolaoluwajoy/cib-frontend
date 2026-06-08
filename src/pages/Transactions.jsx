@@ -101,24 +101,22 @@ export default function Transactions() {
   const isApprover = user?.role === 'APPROVER';
   const isAdmin    = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
-  // Build tabs based on role
   const TABS = [
-    // Only MAKER and ADMIN can initiate
-    ...(isMaker || isAdmin ? [
+    // Only MAKER can initiate transactions
+    ...(isMaker ? [
       { key: 'internal', label: 'Internal Transfer', icon: 'ti-refresh' },
       { key: 'payout',   label: 'External Payout',   icon: 'ti-send'    },
       { key: 'funding',  label: 'External Funding',  icon: 'ti-cash'    },
     ] : []),
-    // Only APPROVER and ADMIN see pending approval
-    ...(isApprover || isAdmin ? [
+    // APPROVER, ADMIN and SUPER_ADMIN see pending approval tab
+    ...(isApprover || isAdmin || isSuperAdmin ? [
       { key: 'pending', label: 'Pending Approval', icon: 'ti-clock' },
     ] : []),
     // Everyone sees all transactions
     { key: 'all', label: 'All Transactions', icon: 'ti-list' },
   ];
 
-  // Default tab based on role
-  const defaultTab = isApprover ? 'pending' : 'internal';
+  const defaultTab = isApprover ? 'pending' : 'all';
   const tabFromUrl = searchParams.get('tab') || defaultTab;
 
   function setTab(key) {
