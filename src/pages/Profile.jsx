@@ -6,9 +6,9 @@ import api from '../api/axios';
 
 // The fields a user can choose to edit
 const EDITABLE_FIELDS = [
-  { key: 'firstName', label: 'First name',    type: 'text',  placeholder: 'Enter new first name'  },
-  { key: 'lastName',  label: 'Last name',     type: 'text',  placeholder: 'Enter new last name'   },
-  { key: 'email',     label: 'Email address', type: 'email', placeholder: 'Enter new email'       },
+  { key: 'firstName', label: 'First name', type: 'text', placeholder: 'Enter new first name' },
+  { key: 'lastName', label: 'Last name', type: 'text', placeholder: 'Enter new last name' },
+  { key: 'email', label: 'Email address', type: 'email', placeholder: 'Enter new email' },
 ];
 
 export default function Profile() {
@@ -20,23 +20,28 @@ export default function Profile() {
   // Form values for each field
   const [form, setForm] = useState({
     firstName: '',
-    lastName:  '',
-    email:     '',
+    lastName: '',
+    email: '',
   });
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
-  const [error, setError]     = useState('');
+  const [error, setError] = useState('');
 
   const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    ? user.name
+        .split(' ')
+        .map((w) => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
     : '?';
 
   // Toggle a field on/off
   function toggleField(key) {
     if (selected.includes(key)) {
       // Deselecting — clear that field's value
-      setSelected(selected.filter(k => k !== key));
+      setSelected(selected.filter((k) => k !== key));
       setForm({ ...form, [key]: '' });
     } else {
       setSelected([...selected, key]);
@@ -52,56 +57,59 @@ export default function Profile() {
       setSelected([]);
       setForm({ firstName: '', lastName: '', email: '' });
     } else {
-      setSelected(EDITABLE_FIELDS.map(f => f.key));
+      setSelected(EDITABLE_FIELDS.map((f) => f.key));
     }
   }
 
- async function handleSubmit(e) {
-   e.preventDefault();
-   setError(''); setSuccess('');
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-   if (selected.length === 0) {
-     setError('Please select at least one field to update.'); return;
-   }
-   if (selected.some(key => !form[key])) {
-     setError('Please fill in all selected fields or deselect them.'); return;
-   }
+    if (selected.length === 0) {
+      setError('Please select at least one field to update.');
+      return;
+    }
+    if (selected.some((key) => !form[key])) {
+      setError('Please fill in all selected fields or deselect them.');
+      return;
+    }
 
-   const body = {};
-   selected.forEach(key => { body[key] = form[key]; });
+    const body = {};
+    selected.forEach((key) => {
+      body[key] = form[key];
+    });
 
-   setLoading(true);
-   try {
-     const res = await api.put('/users/profile', body);
-     const updated = res.data.data;
+    setLoading(true);
+    try {
+      const res = await api.put('/users/profile', body);
+      const updated = res.data.data;
 
-     // Update auth context so sidebar name reflects changes immediately
-     // Preserve the existing token and role — only update name and email
-     login({
-       token:     user.token,
-       role:      user.role,
-       firstName: updated.firstName || user.name?.split(' ')[0] || '',
-       lastName:  updated.lastName  || user.name?.split(' ')[1] || '',
-       email:     updated.email     || user.email,
-     });
+      // Update auth context so sidebar name reflects changes immediately
+      // Preserve the existing token and role — only update name and email
+      login({
+        token: user.token,
+        role: user.role,
+        firstName: updated.firstName || user.name?.split(' ')[0] || '',
+        lastName: updated.lastName || user.name?.split(' ')[1] || '',
+        email: updated.email || user.email,
+      });
 
-     setSuccess('Profile updated successfully!');
-     setSelected([]);
-     setForm({ firstName: '', lastName: '', email: '' });
-
-   } catch (err) {
-     setError(err.response?.data?.message || 'Failed to update profile. Please try again.');
-   } finally {
-     setLoading(false);
-   }
- }
+      setSuccess('Profile updated successfully!');
+      setSelected([]);
+      setForm({ firstName: '', lastName: '', email: '' });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <Layout>
       <Topbar title="My Profile" subtitle="View and update your profile information" />
 
       <main className="p-7 flex flex-col gap-6 max-w-2xl">
-
         {/* ── Profile display card ── */}
         <div className="bg-slate-900 rounded-xl p-6 flex items-center gap-5">
           <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-semibold flex-shrink-0">
@@ -121,9 +129,9 @@ export default function Profile() {
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Current details</h2>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'First name',    value: user?.name?.split(' ')[0] || '—' },
-              { label: 'Last name',     value: user?.name?.split(' ')[1] || '—' },
-              { label: 'Email address', value: user?.email || '—'               },
+              { label: 'First name', value: user?.name?.split(' ')[0] || '—' },
+              { label: 'Last name', value: user?.name?.split(' ')[1] || '—' },
+              { label: 'Email address', value: user?.email || '—' },
               {
                 label: 'NIN',
                 value: '••••••••••• (cannot be changed)',
@@ -134,7 +142,9 @@ export default function Profile() {
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
                   {label}
                 </span>
-                <span className={`text-sm font-medium ${muted ? 'text-gray-300 italic' : 'text-gray-900'}`}>
+                <span
+                  className={`text-sm font-medium ${muted ? 'text-gray-300 italic' : 'text-gray-900'}`}
+                >
                   {value}
                 </span>
               </div>
@@ -144,9 +154,7 @@ export default function Profile() {
 
         {/* ── Edit profile ── */}
         <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-1">
-            Update profile
-          </h2>
+          <h2 className="text-sm font-semibold text-gray-900 mb-1">Update profile</h2>
           <p className="text-xs text-gray-500 mb-5">
             Select which fields you'd like to change. NIN cannot be modified.
           </p>
@@ -168,29 +176,33 @@ export default function Profile() {
             onClick={selectAll}
             className="flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-700 mb-4"
           >
-            <div className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all
-              ${selected.length === EDITABLE_FIELDS.length
-                ? 'bg-blue-600 border-blue-600'
-                : 'border-gray-300'}`}>
+            <div
+              className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all
+              ${
+                selected.length === EDITABLE_FIELDS.length
+                  ? 'bg-blue-600 border-blue-600'
+                  : 'border-gray-300'
+              }`}
+            >
               {selected.length === EDITABLE_FIELDS.length && (
                 <i className="ti ti-check text-white" style={{ fontSize: '10px' }} />
               )}
             </div>
-            {selected.length === EDITABLE_FIELDS.length
-              ? 'Deselect all'
-              : 'Select all fields'}
+            {selected.length === EDITABLE_FIELDS.length ? 'Deselect all' : 'Select all fields'}
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-
             {EDITABLE_FIELDS.map(({ key, label, type, placeholder }) => {
               const isSelected = selected.includes(key);
               return (
-                <div key={key}
+                <div
+                  key={key}
                   className={`border rounded-xl p-4 transition-all cursor-pointer
-                    ${isSelected
-                      ? 'border-blue-300 bg-blue-50/50'
-                      : 'border-gray-200 hover:border-gray-300'}`}
+                    ${
+                      isSelected
+                        ? 'border-blue-300 bg-blue-50/50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
                   onClick={() => !isSelected && toggleField(key)}
                 >
                   {/* Field header with checkbox */}
@@ -198,24 +210,30 @@ export default function Profile() {
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all
-                          ${isSelected
-                            ? 'bg-blue-600 border-blue-600'
-                            : 'border-gray-300'}`}
-                        onClick={e => { e.stopPropagation(); toggleField(key); }}
+                          ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleField(key);
+                        }}
                       >
                         {isSelected && (
                           <i className="ti ti-check text-white" style={{ fontSize: '11px' }} />
                         )}
                       </div>
-                      <span className={`text-sm font-medium transition-colors
-                        ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+                      <span
+                        className={`text-sm font-medium transition-colors
+                        ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}
+                      >
                         {label}
                       </span>
                     </div>
                     {isSelected && (
                       <button
                         type="button"
-                        onClick={e => { e.stopPropagation(); toggleField(key); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleField(key);
+                        }}
                         className="text-xs text-gray-400 hover:text-red-500 transition-colors"
                       >
                         Remove
@@ -225,11 +243,11 @@ export default function Profile() {
 
                   {/* Input field — only shown when selected */}
                   {isSelected && (
-                    <div className="mt-3" onClick={e => e.stopPropagation()}>
+                    <div className="mt-3" onClick={(e) => e.stopPropagation()}>
                       <input
                         type={type}
                         value={form[key]}
-                        onChange={e => setForm({ ...form, [key]: e.target.value })}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
                         placeholder={placeholder}
                         autoFocus
                         className="w-full px-3 py-2.5 border border-blue-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white transition-all placeholder:text-gray-300"
@@ -248,17 +266,20 @@ export default function Profile() {
                   disabled={loading}
                   className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
                 >
-                  {loading
-                    ? <><i className="ti ti-loader animate-spin" /> Saving...</>
-                    : <><i className="ti ti-check" /> Save changes</>
-                  }
+                  {loading ? (
+                    <>
+                      <i className="ti ti-loader animate-spin" /> Saving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti ti-check" /> Save changes
+                    </>
+                  )}
                 </button>
               </div>
             )}
-
           </form>
         </div>
-
       </main>
     </Layout>
   );
