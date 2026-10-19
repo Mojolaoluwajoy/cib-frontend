@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
   const [validating, setValidating] = useState(true);
   const inactivityTimer = useRef(null);
 
-  const logout = useCallback((reason) => {
+  const logout = useCallback(() => {
     localStorage.removeItem('cib_user');
     setUser({ token: null, role: null, name: null, email: null });
     if (inactivityTimer.current) {
@@ -75,12 +75,9 @@ export function AuthProvider({ children }) {
       clearTimeout(inactivityTimer.current);
     }
     if (user?.token) {
-      inactivityTimer.current = setTimeout(
-        () => {
-          logout('inactivity');
-        },
-        30 * 60 * 1000,
-      );
+      inactivityTimer.current = setTimeout(() => {
+        logout();
+      }, INACTIVITY_LIMIT);
     }
   }, [user?.token, logout]);
 
@@ -140,6 +137,7 @@ export function AuthProvider({ children }) {
   }
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 }
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

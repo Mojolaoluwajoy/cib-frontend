@@ -24,8 +24,6 @@ jobs:
 
       - name: Lint
         run: npm run lint
-        # Existing lint errors predate CI; make this blocking once they are fixed
-        continue-on-error: true
 
       - name: Build
         run: npm run build

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
-import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
 function Pill({ status }) {
@@ -25,7 +24,6 @@ const EDITABLE_FIELDS = [
 ];
 
 export default function Users() {
-  const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
