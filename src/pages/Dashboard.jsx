@@ -59,11 +59,6 @@ function SuperAdminDashboard({ user }) {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user?.token) return;
-    loadStats();
-    loadOrgs();
-  }, [user?.token]);
   // Calls /dashboard/stats — returns org counts for SUPER_ADMIN
   async function loadStats() {
     try {
@@ -85,6 +80,14 @@ function SuperAdminDashboard({ user }) {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (!user?.token) return;
+    // Loaders only set state after awaiting the API, so this is not a synchronous update
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadStats();
+    loadOrgs();
+  }, [user?.token]);
 
   return (
     <main className="p-7 flex flex-col gap-6">
@@ -242,12 +245,6 @@ function OperationalDashboard({ user }) {
 
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadStats();
-    loadRecentTransactions();
-    loadPending();
-  }, []);
-
   async function loadOrgDetails() {
     try {
       const res = await api.get('/organizations/viewAll');
@@ -260,13 +257,6 @@ function OperationalDashboard({ user }) {
     }
   }
 
-  // Add loadOrgDetails() to the useEffect
-  useEffect(() => {
-    loadStats();
-    loadRecentTransactions();
-    loadPending();
-    loadOrgDetails(); // ← add this
-  }, []);
   async function loadStats() {
     try {
       const res = await api.get('/dashboard/stats');
@@ -296,6 +286,15 @@ function OperationalDashboard({ user }) {
       setPending([]);
     }
   }
+
+  useEffect(() => {
+    // Loaders only set state after awaiting the API, so this is not a synchronous update
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadStats();
+    loadRecentTransactions();
+    loadPending();
+    loadOrgDetails();
+  }, []);
 
   const isApprover = user?.role === 'APPROVER';
 

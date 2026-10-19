@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
@@ -30,7 +30,6 @@ const ORG_STATUSES = ['APPROVED', 'REJECTED', 'PENDING', 'DISABLED'];
 
 export default function EditOrganization() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [org, setOrg] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,10 +46,6 @@ export default function EditOrganization() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadOrg();
-  }, [id]);
-
   async function loadOrg() {
     setLoading(true);
     try {
@@ -63,6 +58,13 @@ export default function EditOrganization() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // Refetch when the route id changes; the loader resets loading state before fetching
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadOrg();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   function toggleField(key) {
     if (selected.includes(key)) {

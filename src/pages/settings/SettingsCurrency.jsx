@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Topbar from '../../components/Topbar';
@@ -34,13 +34,15 @@ export default function SettingsCurrency() {
   const [updateLoading, setUpdateLoading] = useState(false);
 
   // When user selects "View all" — load immediately
-  useEffect(() => {
-    if (selectedAction === 'view') {
+  function selectAction(key) {
+    const next = key === selectedAction ? '' : key;
+    setSelectedAction(next);
+    if (next === 'view') {
       loadAllCurrencies();
     } else {
       setCurrencies([]);
     }
-  }, [selectedAction]);
+  }
 
   async function loadAllCurrencies() {
     setLoading(true);
@@ -106,7 +108,7 @@ export default function SettingsCurrency() {
             {ACTIONS.map(({ key, label }) => (
               <button
                 key={key}
-                onClick={() => setSelectedAction(key === selectedAction ? '' : key)}
+                onClick={() => selectAction(key)}
                 className={`flex items-center justify-between px-4 py-3 rounded-lg border text-sm font-medium transition-all text-left
                   ${
                     selectedAction === key

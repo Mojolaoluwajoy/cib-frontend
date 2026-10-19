@@ -2,10 +2,71 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+function NavItem({ to, icon, label }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
+      ${
+        isActive
+          ? 'bg-blue-600 text-white font-medium'
+          : 'text-white/55 hover:bg-white/10 hover:text-white'
+      }`
+      }
+    >
+      <i className={`ti ${icon} text-lg`} /> {label}
+    </NavLink>
+  );
+}
+
+function SectionLabel({ label }) {
+  return (
+    <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
+      {label}
+    </p>
+  );
+}
+
+function TxnDropdown({ links }) {
+  const [transactionsOpen, setTransactionsOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        onClick={() => setTransactionsOpen(!transactionsOpen)}
+        className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
+      >
+        <div className="flex items-center gap-2.5">
+          <i className="ti ti-arrow-left-right text-lg" /> Transactions
+        </div>
+        <i
+          className={`ti ti-chevron-down text-sm transition-transform ${transactionsOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {transactionsOpen && (
+        <div className="pl-3 flex flex-col gap-0.5 mt-0.5">
+          {links.map(({ to, icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
+                ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
+              }
+            >
+              <i className={`ti ${icon} text-sm`} /> {label}
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [transactionsOpen, setTransactionsOpen] = useState(false);
 
   const isSuperAdmin = user?.role === 'SUPER_ADMIN';
   const isAdmin = user?.role === 'ADMIN';
@@ -24,66 +85,6 @@ export default function Sidebar() {
   function handleLogout() {
     logout();
     navigate('/login');
-  }
-
-  function NavItem({ to, icon, label }) {
-    return (
-      <NavLink
-        to={to}
-        className={({ isActive }) =>
-          `flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-        ${
-          isActive
-            ? 'bg-blue-600 text-white font-medium'
-            : 'text-white/55 hover:bg-white/10 hover:text-white'
-        }`
-        }
-      >
-        <i className={`ti ${icon} text-lg`} /> {label}
-      </NavLink>
-    );
-  }
-
-  function SectionLabel({ label }) {
-    return (
-      <p className="text-white/30 text-xs font-semibold uppercase tracking-widest px-2 pt-3 pb-1">
-        {label}
-      </p>
-    );
-  }
-
-  function TxnDropdown({ links }) {
-    return (
-      <>
-        <button
-          onClick={() => setTransactionsOpen(!transactionsOpen)}
-          className="flex items-center justify-between px-3 py-2 rounded-lg text-sm text-white/55 hover:bg-white/10 hover:text-white transition-all w-full"
-        >
-          <div className="flex items-center gap-2.5">
-            <i className="ti ti-arrow-left-right text-lg" /> Transactions
-          </div>
-          <i
-            className={`ti ti-chevron-down text-sm transition-transform ${transactionsOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-        {transactionsOpen && (
-          <div className="pl-3 flex flex-col gap-0.5 mt-0.5">
-            {links.map(({ to, icon, label }) => (
-              <NavLink
-                key={to}
-                to={to}
-                className={({ isActive }) =>
-                  `flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs transition-all
-                  ${isActive ? 'text-blue-400 font-medium' : 'text-white/45 hover:bg-white/10 hover:text-white'}`
-                }
-              >
-                <i className={`ti ${icon} text-sm`} /> {label}
-              </NavLink>
-            ))}
-          </div>
-        )}
-      </>
-    );
   }
 
   return (

@@ -80,10 +80,6 @@ export default function OrgDetail() {
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [inviteError, setInviteError] = useState('');
 
-  useEffect(() => {
-    loadAll();
-  }, [id]);
-
   async function loadAll() {
     setLoading(true);
     try {
@@ -120,6 +116,13 @@ export default function OrgDetail() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // Refetch when the route id changes; the loader resets loading state before fetching
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   async function handleCreateAccount(e) {
     e.preventDefault();

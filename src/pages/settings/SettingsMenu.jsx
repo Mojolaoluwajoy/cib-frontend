@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function SettingsMenu() {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
   const options = [
     {
