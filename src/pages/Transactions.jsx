@@ -109,7 +109,7 @@ export default function Transactions() {
       { key: 'funding',  label: 'External Funding',  icon: 'ti-cash'    },
     ] : []),
     // APPROVER, ADMIN and SUPER_ADMIN see pending approval tab
-    ...(isApprover || isAdmin || isSuperAdmin ? [
+    ...(isApprover || isAdmin ? [
       { key: 'pending', label: 'Pending Approval', icon: 'ti-clock' },
     ] : []),
     // Everyone sees all transactions
@@ -367,7 +367,7 @@ export default function Transactions() {
         </div>
 
         {/* ── Internal Transfer ── */}
-        {tabFromUrl === 'internal' && (isMaker || isAdmin) && (
+        {tabFromUrl === 'internal' && isMaker && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
             <h2 className="text-sm font-semibold text-gray-900 mb-1">
               Initiate internal transfer
@@ -408,7 +408,7 @@ export default function Transactions() {
         )}
 
         {/* ── External Payout ── */}
-        {tabFromUrl === 'payout' && (isMaker || isAdmin) && (
+        {tabFromUrl === 'payout' && isMaker && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
             <h2 className="text-sm font-semibold text-gray-900 mb-1">
               Initiate external payout
@@ -465,7 +465,7 @@ export default function Transactions() {
         )}
 
         {/* ── External Funding ── */}
-        {tabFromUrl === 'funding' && (isMaker || isAdmin) && (
+        {tabFromUrl === 'funding' && isMaker && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
             <h2 className="text-sm font-semibold text-gray-900 mb-1">
               External funding
@@ -543,7 +543,7 @@ export default function Transactions() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b-2 border-gray-100">
-                        {['Reference','Type','Source','Destination','Amount','Status','Action'].map(h => (
+                        {['Reference','Type','Source','Destination','Amount','Status', ...(isApprover ? ['Action'] : [])].map(h => (
                           <th key={h} className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">
                             {h}
                           </th>
@@ -567,6 +567,7 @@ export default function Transactions() {
                             {formatMoney(t.amount)}
                           </td>
                           <td className="px-3 py-3"><Pill status={t.status} /></td>
+                          {isApprover && (
                           <td className="px-3 py-3">
                             <div className="flex gap-2">
                               <button
@@ -589,6 +590,7 @@ export default function Transactions() {
                               </button>
                             </div>
                           </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
