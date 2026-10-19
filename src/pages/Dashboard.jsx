@@ -10,16 +10,12 @@ function MetricCard({ label, value, sub, icon, color }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-5">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          {label}
-        </span>
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${color}`}>
           <i className={`ti ${icon} text-base`} />
         </div>
       </div>
-      <div className="text-2xl font-semibold text-gray-900">
-        {value ?? '—'}
-      </div>
+      <div className="text-2xl font-semibold text-gray-900">{value ?? '—'}</div>
       {sub && <div className="text-xs text-gray-400 mt-1">{sub}</div>}
     </div>
   );
@@ -28,23 +24,21 @@ function MetricCard({ label, value, sub, icon, color }) {
 // ── Status pill ──
 function Pill({ status }) {
   const map = {
-    APPROVED:  'bg-green-50 text-green-700',
-    ACTIVE:    'bg-green-50 text-green-700',
+    APPROVED: 'bg-green-50 text-green-700',
+    ACTIVE: 'bg-green-50 text-green-700',
     COMPLETED: 'bg-green-50 text-green-700',
-    SUCCESS:   'bg-green-50 text-green-700',
-    PENDING:   'bg-amber-50 text-amber-700',
+    SUCCESS: 'bg-green-50 text-green-700',
+    PENDING: 'bg-amber-50 text-amber-700',
     PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
-    DISABLED:  'bg-gray-100 text-gray-500',
-    INACTIVE:  'bg-amber-50 text-amber-700',
-    REJECTED:  'bg-red-50 text-red-700',
-    FAILED:    'bg-red-50 text-red-700',
+    DISABLED: 'bg-gray-100 text-gray-500',
+    INACTIVE: 'bg-amber-50 text-amber-700',
+    REJECTED: 'bg-red-50 text-red-700',
+    FAILED: 'bg-red-50 text-red-700',
     IN_REVIEW: 'bg-blue-50 text-blue-700',
   };
   const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
   return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>
-      {status}
-    </span>
+    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
   );
 }
 
@@ -60,9 +54,9 @@ function formatMoney(amount) {
 // ══════════════════════════════════════════════════════
 function SuperAdminDashboard({ user }) {
   // stats holds the numbers from /dashboard/stats
-  const [stats, setStats]   = useState(null);
+  const [stats, setStats] = useState(null);
   // orgs holds the actual org list for the table
-  const [orgs, setOrgs]     = useState([]);
+  const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -94,7 +88,6 @@ function SuperAdminDashboard({ user }) {
 
   return (
     <main className="p-7 flex flex-col gap-6">
-
       {/* Welcome banner */}
       <div className="bg-slate-900 rounded-xl p-6 flex items-center justify-between">
         <div>
@@ -106,7 +99,12 @@ function SuperAdminDashboard({ user }) {
           </p>
         </div>
         <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-lg">
-          {user?.name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+          {user?.name
+            ?.split(' ')
+            .map((w) => w[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase()}
         </div>
       </div>
 
@@ -145,11 +143,8 @@ function SuperAdminDashboard({ user }) {
       {/* Organizations table */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-900">
-            All organizations
-          </h2>
-          <Link to="/org-onboarding"
-            className="text-xs text-blue-600 hover:underline font-medium">
+          <h2 className="text-sm font-semibold text-gray-900">All organizations</h2>
+          <Link to="/org-onboarding" className="text-xs text-blue-600 hover:underline font-medium">
             Manage approvals →
           </Link>
         </div>
@@ -166,9 +161,11 @@ function SuperAdminDashboard({ user }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-gray-100">
-                  {['Organization', 'Reg. number', 'Status'].map(h => (
-                    <th key={h}
-                      className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  {['Organization', 'Reg. number', 'Status'].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                    >
                       {h}
                     </th>
                   ))}
@@ -197,20 +194,25 @@ function SuperAdminDashboard({ user }) {
           {[
             {
               label: 'Approve organizations',
-              icon:  'ti-building',
-              href:  '/org-onboarding',
+              icon: 'ti-building',
+              href: '/org-onboarding',
               color: 'text-blue-600 bg-blue-50',
             },
             {
               label: 'Manage currencies',
-              icon:  'ti-currency-dollar',
-              href:  '/settings',
+              icon: 'ti-currency-dollar',
+              href: '/settings',
               color: 'text-green-600 bg-green-50',
             },
           ].map(({ label, icon, href, color }) => (
-            <Link key={label} to={href}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
+            <Link
+              key={label}
+              to={href}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
+            >
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}
+              >
                 <i className={`ti ${icon} text-base`} />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">
@@ -220,7 +222,6 @@ function SuperAdminDashboard({ user }) {
           ))}
         </div>
       </div>
-
     </main>
   );
 }
@@ -231,15 +232,15 @@ function SuperAdminDashboard({ user }) {
 // ══════════════════════════════════════════════════════
 
 function OperationalDashboard({ user }) {
-    const [orgDetails, setOrgDetails] = useState(null);
+  const [orgDetails, setOrgDetails] = useState(null);
 
-   const [stats, setStats]               = useState('');
+  const [stats, setStats] = useState('');
 
-    const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
-    const [pending, setPending]           = useState([]);
+  const [pending, setPending] = useState([]);
 
-  const [loading, setLoading]           = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadStats();
@@ -247,11 +248,11 @@ function OperationalDashboard({ user }) {
     loadPending();
   }, []);
 
-    async function loadOrgDetails() {
+  async function loadOrgDetails() {
     try {
       const res = await api.get('/organizations/viewAll');
       const orgs = res.data.data || [];
-         if (orgs.length > 0) {
+      if (orgs.length > 0) {
         setOrgDetails(orgs[0]);
       }
     } catch {
@@ -264,7 +265,7 @@ function OperationalDashboard({ user }) {
     loadStats();
     loadRecentTransactions();
     loadPending();
-    loadOrgDetails();  // ← add this
+    loadOrgDetails(); // ← add this
   }, []);
   async function loadStats() {
     try {
@@ -277,7 +278,7 @@ function OperationalDashboard({ user }) {
     }
   }
 
-    async function loadRecentTransactions() {
+  async function loadRecentTransactions() {
     try {
       const res = await api.get('/transactions/transactions?page=0&size=4');
       setTransactions(res.data.data?.content || res.data.data || []);
@@ -300,59 +301,56 @@ function OperationalDashboard({ user }) {
 
   return (
     <main className="p-7 flex flex-col gap-6">
-{/* ── Dedicated virtual account card ── */}
-{orgDetails?.dvaAccountNumber && (
-  <div className="bg-slate-900 rounded-xl p-5">
-    <div className="flex items-center gap-3 mb-4">
-      <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-        <i className="ti ti-building-bank text-white text-sm" />
-      </div>
-      <div>
-        <div className="text-white text-sm font-semibold">
-          Your dedicated account
+      {/* ── Dedicated virtual account card ── */}
+      {orgDetails?.dvaAccountNumber && (
+        <div className="bg-slate-900 rounded-xl p-5">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+              <i className="ti ti-building-bank text-white text-sm" />
+            </div>
+            <div>
+              <div className="text-white text-sm font-semibold">Your dedicated account</div>
+              <div className="text-white/50 text-xs mt-0.5">
+                Anyone can transfer funds directly to this account
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Bank</div>
+              <div className="text-white text-sm font-semibold">
+                {orgDetails.dvaBankName || '—'}
+              </div>
+            </div>
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">
+                Account number
+              </div>
+              <div className="text-white text-sm font-semibold font-mono tracking-wider">
+                {orgDetails.dvaAccountNumber || '—'}
+              </div>
+            </div>
+            <div className="bg-white/10 rounded-lg p-3">
+              <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Account name</div>
+              <div className="text-white text-sm font-semibold">{orgDetails.name || '—'}</div>
+            </div>
+          </div>
         </div>
-        <div className="text-white/50 text-xs mt-0.5">
-          Anyone can transfer funds directly to this account
-        </div>
-      </div>
-    </div>
-    <div className="grid grid-cols-3 gap-4">
-      <div className="bg-white/10 rounded-lg p-3">
-        <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Bank</div>
-        <div className="text-white text-sm font-semibold">
-          {orgDetails.dvaBankName || '—'}
-        </div>
-      </div>
-      <div className="bg-white/10 rounded-lg p-3">
-        <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Account number</div>
-        <div className="text-white text-sm font-semibold font-mono tracking-wider">
-          {orgDetails.dvaAccountNumber || '—'}
-        </div>
-      </div>
-      <div className="bg-white/10 rounded-lg p-3">
-        <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Account name</div>
-        <div className="text-white text-sm font-semibold">
-          {orgDetails.name || '—'}
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
-{/* Show message if org is approved but DVA not yet created */}
-{orgDetails && !orgDetails.dvaAccountNumber && (
-  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-    <i className="ti ti-clock text-amber-500 text-lg flex-shrink-0" />
-    <div>
-      <div className="text-amber-800 text-sm font-semibold">
-        Dedicated account pending
-      </div>
-      <div className="text-amber-600 text-xs mt-0.5">
-        Your dedicated virtual account will appear here once it has been created by the platform.
-      </div>
-    </div>
-  </div>
-)}
+      {/* Show message if org is approved but DVA not yet created */}
+      {orgDetails && !orgDetails.dvaAccountNumber && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+          <i className="ti ti-clock text-amber-500 text-lg flex-shrink-0" />
+          <div>
+            <div className="text-amber-800 text-sm font-semibold">Dedicated account pending</div>
+            <div className="text-amber-600 text-xs mt-0.5">
+              Your dedicated virtual account will appear here once it has been created by the
+              platform.
+            </div>
+          </div>
+        </div>
+      )}
       {/* Metric cards — numbers come from stats object */}
       <div className={`grid gap-4 ${isApprover ? 'grid-cols-4' : 'grid-cols-3'}`}>
         <MetricCard
@@ -389,15 +387,11 @@ function OperationalDashboard({ user }) {
 
       {/* Row: Recent transactions + Pending approvals */}
       <div className="grid grid-cols-2 gap-5">
-
         {/* Recent transactions list */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Recent transactions
-            </h2>
-            <Link to="/transactions"
-              className="text-xs text-blue-600 hover:underline">
+            <h2 className="text-sm font-semibold text-gray-900">Recent transactions</h2>
+            <Link to="/transactions" className="text-xs text-blue-600 hover:underline">
               View all →
             </Link>
           </div>
@@ -415,26 +409,31 @@ function OperationalDashboard({ user }) {
                 const isCredit = (t.type || '').toUpperCase() === 'EXTERNAL_FUNDING';
                 return (
                   <div key={i} className="flex items-center gap-3 py-3">
-                    <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
-                      ${isCredit ? 'bg-green-50' : 'bg-blue-50'}`}>
-                      <i className={`ti ${isCredit
-                        ? 'ti-arrow-down text-green-600'
-                        : 'ti-arrow-up text-blue-600'} text-base`} />
+                    <div
+                      className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0
+                      ${isCredit ? 'bg-green-50' : 'bg-blue-50'}`}
+                    >
+                      <i
+                        className={`ti ${
+                          isCredit ? 'ti-arrow-down text-green-600' : 'ti-arrow-up text-blue-600'
+                        } text-base`}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 truncate">
-                        {t.sourceAccount?.accountNumber
-                          || t.transactionReference
-                          || '—'}
+                        {t.sourceAccount?.accountNumber || t.transactionReference || '—'}
                       </div>
                       <div className="text-xs text-gray-400 mt-0.5">
                         {(t.type || '').replace(/_/g, ' ')}
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <div className={`text-sm font-semibold
-                        ${isCredit ? 'text-green-600' : 'text-gray-900'}`}>
-                        {isCredit ? '+' : '-'}{formatMoney(t.amount)}
+                      <div
+                        className={`text-sm font-semibold
+                        ${isCredit ? 'text-green-600' : 'text-gray-900'}`}
+                      >
+                        {isCredit ? '+' : '-'}
+                        {formatMoney(t.amount)}
                       </div>
                       <Pill status={t.status} />
                     </div>
@@ -448,11 +447,8 @@ function OperationalDashboard({ user }) {
         {/* Pending approvals list */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-900">
-              Pending approvals
-            </h2>
-            <Link to="/transactions?tab=pending"
-              className="text-xs text-blue-600 hover:underline">
+            <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
+            <Link to="/transactions?tab=pending" className="text-xs text-blue-600 hover:underline">
               View all →
             </Link>
           </div>
@@ -490,44 +486,46 @@ function OperationalDashboard({ user }) {
             </div>
           )}
         </div>
-
       </div>
 
       {/* Quick actions */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">
-          Quick actions
-        </h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">Quick actions</h2>
         <div className="grid grid-cols-4 gap-3">
           {[
             {
               label: 'New onboarding',
-              icon:  'ti-user-plus',
-              href:  '/org-onboarding',
+              icon: 'ti-user-plus',
+              href: '/org-onboarding',
               color: 'text-blue-600 bg-blue-50',
             },
             {
               label: 'New transfer',
-              icon:  'ti-arrow-left-right',
-              href:  '/transactions?tab=internal',
+              icon: 'ti-arrow-left-right',
+              href: '/transactions?tab=internal',
               color: 'text-green-600 bg-green-50',
             },
             {
               label: 'External funding',
-              icon:  'ti-cash',
-              href:  '/transactions?tab=funding',
+              icon: 'ti-cash',
+              href: '/transactions?tab=funding',
               color: 'text-amber-600 bg-amber-50',
             },
             {
               label: 'Create payout',
-              icon:  'ti-send',
-              href:  '/transactions?tab=payout',
+              icon: 'ti-send',
+              href: '/transactions?tab=payout',
               color: 'text-purple-600 bg-purple-50',
             },
           ].map(({ label, icon, href, color }) => (
-            <Link key={label} to={href}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
+            <Link
+              key={label}
+              to={href}
+              className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
+            >
+              <div
+                className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}
+              >
                 <i className={`ti ${icon} text-base`} />
               </div>
               <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">
@@ -537,7 +535,6 @@ function OperationalDashboard({ user }) {
           ))}
         </div>
       </div>
-
     </main>
   );
 }
@@ -554,10 +551,11 @@ export default function Dashboard() {
         title="Dashboard"
         subtitle={`Welcome back, ${user?.name?.split(' ')[0] || 'there'}`}
       />
-      {user?.role === 'SUPER_ADMIN'
-        ? <SuperAdminDashboard user={user} />
-        : <OperationalDashboard user={user} />
-      }
+      {user?.role === 'SUPER_ADMIN' ? (
+        <SuperAdminDashboard user={user} />
+      ) : (
+        <OperationalDashboard user={user} />
+      )}
     </Layout>
   );
 }

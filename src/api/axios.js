@@ -7,7 +7,7 @@ const api = axios.create({
 
 // ── Attach JWT token to every request ──
 api.interceptors.request.use(
-  config => {
+  (config) => {
     try {
       const stored = localStorage.getItem('cib_user');
       if (stored) {
@@ -21,7 +21,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  error => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // ── Auto logout on 401 ──
@@ -31,23 +31,20 @@ api.interceptors.request.use(
 // 3. Organization disabled
 // 4. Token expired
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  (error) => {
     if (error.response?.status === 401) {
       // Clear stored session
       localStorage.removeItem('cib_user');
       // Hard redirect clears all React state
-      const publicPaths = ['/login', '/register',
-        '/forgot-password', '/complete-registration'];
-      const isPublic = publicPaths.some(p =>
-        window.location.pathname.startsWith(p)
-      );
+      const publicPaths = ['/login', '/register', '/forgot-password', '/complete-registration'];
+      const isPublic = publicPaths.some((p) => window.location.pathname.startsWith(p));
       if (!isPublic) {
         window.location.href = '/login';
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

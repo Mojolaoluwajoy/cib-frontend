@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-} from 'react';
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -16,9 +9,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const stored = localStorage.getItem('cib_user');
-      return stored
-        ? JSON.parse(stored)
-        : { token: null, role: null, name: null, email: null };
+      return stored ? JSON.parse(stored) : { token: null, role: null, name: null, email: null };
     } catch {
       return { token: null, role: null, name: null, email: null };
     }
@@ -33,11 +24,8 @@ export function AuthProvider({ children }) {
     if (inactivityTimer.current) {
       clearTimeout(inactivityTimer.current);
     }
-    const publicPaths = ['/login', '/register',
-      '/forgot-password', '/complete-registration'];
-    const isPublic = publicPaths.some(p =>
-      window.location.pathname.startsWith(p)
-    );
+    const publicPaths = ['/login', '/register', '/forgot-password', '/complete-registration'];
+    const isPublic = publicPaths.some((p) => window.location.pathname.startsWith(p));
     if (!isPublic) {
       window.location.href = '/login';
     }
@@ -87,20 +75,22 @@ export function AuthProvider({ children }) {
       clearTimeout(inactivityTimer.current);
     }
     if (user?.token) {
-      inactivityTimer.current = setTimeout(() => {
-        logout('inactivity');
-      }, 30 * 60 * 1000);
+      inactivityTimer.current = setTimeout(
+        () => {
+          logout('inactivity');
+        },
+        30 * 60 * 1000,
+      );
     }
   }, [user?.token, logout]);
 
   useEffect(() => {
     if (!user?.token) return;
-    const events = ['mousedown', 'keydown', 'scroll',
-      'touchstart', 'click', 'mousemove'];
-    events.forEach(e => window.addEventListener(e, resetTimer));
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click', 'mousemove'];
+    events.forEach((e) => window.addEventListener(e, resetTimer));
     resetTimer();
     return () => {
-      events.forEach(e => window.removeEventListener(e, resetTimer));
+      events.forEach((e) => window.removeEventListener(e, resetTimer));
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     };
   }, [user?.token, resetTimer]);
@@ -108,8 +98,8 @@ export function AuthProvider({ children }) {
   function login(data) {
     const userData = {
       token: data.token,
-      role:  data.role,
-      name:  `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+      role: data.role,
+      name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
       email: data.email,
     };
     localStorage.setItem('cib_user', JSON.stringify(userData));
@@ -122,12 +112,25 @@ export function AuthProvider({ children }) {
       <AuthContext.Provider value={{ user, login, logout }}>
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
           <div className="flex items-center gap-3 text-gray-400">
-            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-              fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10"
-                stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            <svg
+              className="animate-spin h-5 w-5"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             <span className="text-sm">Loading...</span>
           </div>
@@ -135,11 +138,7 @@ export function AuthProvider({ children }) {
       </AuthContext.Provider>
     );
   }
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 }
 export function useAuth() {
   return useContext(AuthContext);

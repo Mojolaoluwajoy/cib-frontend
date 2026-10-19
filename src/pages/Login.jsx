@@ -35,11 +35,10 @@ export default function Login() {
       });
 
       const loginData = res.data.data || res.data;
-      console.log('loginData:', loginData);  // ← add this
+      console.log('loginData:', loginData); // ← add this
 
       login(loginData);
       navigate('/dashboard');
-
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password.');
     } finally {
@@ -50,22 +49,16 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
       <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden flex min-h-[560px]">
-
         {/* ── Left brand panel ── */}
         <div className="w-80 flex-shrink-0 bg-slate-900 p-10 flex flex-col justify-between">
           <div>
-            <div className="text-white font-semibold text-lg tracking-tight">
-              CIB Platform
-            </div>
-            <div className="text-white/40 text-xs mt-1">
-              Corporate Internet Banking
-            </div>
+            <div className="text-white font-semibold text-lg tracking-tight">CIB Platform</div>
+            <div className="text-white/40 text-xs mt-1">Corporate Internet Banking</div>
           </div>
 
           <div>
             <h2 className="text-white text-2xl font-semibold leading-snug tracking-tight">
-              Banking operations,{' '}
-              <span className="text-blue-400">simplified.</span>
+              Banking operations, <span className="text-blue-400">simplified.</span>
             </h2>
             <p className="text-white/45 text-sm mt-3 leading-relaxed">
               Manage onboarding, accounts, transfers and payouts — all in one place.
@@ -89,12 +82,8 @@ export default function Login() {
 
         {/* ── Right form panel ── */}
         <div className="flex-1 p-10 flex flex-col justify-center">
-          <h3 className="text-gray-900 text-xl font-semibold tracking-tight">
-            Welcome back
-          </h3>
-          <p className="text-gray-500 text-sm mt-1 mb-7">
-            Sign in to your CIB account to continue
-          </p>
+          <h3 className="text-gray-900 text-xl font-semibold tracking-tight">Welcome back</h3>
+          <p className="text-gray-500 text-sm mt-1 mb-7">Sign in to your CIB account to continue</p>
 
           {/* Error alert */}
           {error && (
@@ -105,7 +94,6 @@ export default function Login() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
             {/* Email */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -151,10 +139,7 @@ export default function Login() {
 
             {/* Forgot password */}
             <div className="text-right -mt-1">
-              <Link
-                to="/forgot-password"
-                className="text-xs text-blue-600 hover:underline"
-              >
+              <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
                 Forgot password?
               </Link>
             </div>
@@ -165,12 +150,16 @@ export default function Login() {
               disabled={loading}
               className="w-full py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 mt-1"
             >
-              {loading
-                ? <><i className="ti ti-loader animate-spin" /> Signing in...</>
-                : <><i className="ti ti-login" /> Sign in</>
-              }
+              {loading ? (
+                <>
+                  <i className="ti ti-loader animate-spin" /> Signing in...
+                </>
+              ) : (
+                <>
+                  <i className="ti ti-login" /> Sign in
+                </>
+              )}
             </button>
-
           </form>
 
           {/* Register link */}
@@ -181,7 +170,6 @@ export default function Login() {
             </Link>
           </p>
         </div>
-
       </div>
     </div>
   );

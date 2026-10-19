@@ -7,34 +7,32 @@ import api from '../api/axios';
 
 function Pill({ status }) {
   const map = {
-    APPROVED:         'bg-green-50 text-green-700',
-    SUCCESS:          'bg-green-50 text-green-700',
-    COMPLETED:        'bg-green-50 text-green-700',
-    PENDING:          'bg-amber-50 text-amber-700',
+    APPROVED: 'bg-green-50 text-green-700',
+    SUCCESS: 'bg-green-50 text-green-700',
+    COMPLETED: 'bg-green-50 text-green-700',
+    PENDING: 'bg-amber-50 text-amber-700',
     PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
-    REJECTED:         'bg-red-50 text-red-700',
-    FAILED:           'bg-red-50 text-red-700',
-    EXPIRED:          'bg-gray-100 text-gray-500',
-    REVERSED:         'bg-purple-50 text-purple-700',
+    REJECTED: 'bg-red-50 text-red-700',
+    FAILED: 'bg-red-50 text-red-700',
+    EXPIRED: 'bg-gray-100 text-gray-500',
+    REVERSED: 'bg-purple-50 text-purple-700',
   };
-  const cls = map[(status||'').toUpperCase()] || 'bg-gray-100 text-gray-600';
+  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
   return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>
-      {status}
-    </span>
+    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
   );
 }
 
 function TypePill({ type }) {
   const map = {
     INTERNAL_TRANSFER: 'bg-blue-50 text-blue-700',
-    EXTERNAL_PAYOUT:   'bg-purple-50 text-purple-700',
-    EXTERNAL_FUNDING:  'bg-green-50 text-green-700',
+    EXTERNAL_PAYOUT: 'bg-purple-50 text-purple-700',
+    EXTERNAL_FUNDING: 'bg-green-50 text-green-700',
   };
-  const cls = map[(type||'').toUpperCase()] || 'bg-gray-100 text-gray-600';
+  const cls = map[(type || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
   return (
     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>
-      {(type||'').replace(/_/g,' ')}
+      {(type || '').replace(/_/g, ' ')}
     </span>
   );
 }
@@ -45,16 +43,18 @@ function formatMoney(amount) {
 }
 
 function Alert({ success, error }) {
-  if (success) return (
-    <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-      <i className="ti ti-circle-check" /> {success}
-    </div>
-  );
-  if (error) return (
-    <div className="flex items-center gap-2 bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-      <i className="ti ti-alert-circle" /> {error}
-    </div>
-  );
+  if (success)
+    return (
+      <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
+        <i className="ti ti-circle-check" /> {success}
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex items-center gap-2 bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
+        <i className="ti ti-alert-circle" /> {error}
+      </div>
+    );
   return null;
 }
 
@@ -65,8 +65,10 @@ function Flow({ steps }) {
         <div key={i} className="flex items-center gap-2">
           {i > 0 && <i className="ti ti-chevron-right text-gray-300 text-sm" />}
           <div className="flex items-center gap-1.5">
-            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold
-              ${i === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}>
+            <div
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-semibold
+              ${i === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'}`}
+            >
               {i + 1}
             </div>
             <span className={`text-xs font-medium ${i === 0 ? 'text-blue-600' : 'text-gray-400'}`}>
@@ -79,39 +81,42 @@ function Flow({ steps }) {
   );
 }
 
- function Field({ label, value, onChange, type = 'text', placeholder, full }) {
-    return (
-      <div className={`flex flex-col gap-1.5 ${full ? 'col-span-2' : ''}`}>
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          {label}
-        </label>
-        <input type={type} value={value} onChange={onChange}
-          placeholder={placeholder}
-          className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300" />
-      </div>
-    );
-  }
-
+function Field({ label, value, onChange, type = 'text', placeholder, full }) {
+  return (
+    <div className={`flex flex-col gap-1.5 ${full ? 'col-span-2' : ''}`}>
+      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
+      />
+    </div>
+  );
+}
 
 export default function Transactions() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const isMaker    = user?.role === 'MAKER';
+  const isMaker = user?.role === 'MAKER';
   const isApprover = user?.role === 'APPROVER';
-  const isAdmin    = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
 
   const TABS = [
     // Only MAKER can initiate transactions
-    ...(isMaker ? [
-      { key: 'internal', label: 'Internal Transfer', icon: 'ti-refresh' },
-      { key: 'payout',   label: 'External Payout',   icon: 'ti-send'    },
-      { key: 'funding',  label: 'External Funding',  icon: 'ti-cash'    },
-    ] : []),
+    ...(isMaker
+      ? [
+          { key: 'internal', label: 'Internal Transfer', icon: 'ti-refresh' },
+          { key: 'payout', label: 'External Payout', icon: 'ti-send' },
+          { key: 'funding', label: 'External Funding', icon: 'ti-cash' },
+        ]
+      : []),
     // APPROVER, ADMIN and SUPER_ADMIN see pending approval tab
-    ...(isApprover || isAdmin || isSuperAdmin ? [
-      { key: 'pending', label: 'Pending Approval', icon: 'ti-clock' },
-    ] : []),
+    ...(isApprover || isAdmin
+      ? [{ key: 'pending', label: 'Pending Approval', icon: 'ti-clock' }]
+      : []),
     // Everyone sees all transactions
     { key: 'all', label: 'All Transactions', icon: 'ti-list' },
   ];
@@ -125,74 +130,91 @@ export default function Transactions() {
 
   // ── Internal transfer state ──
   const [intForm, setIntForm] = useState({
-    sourceAccount: '', destinationAccount: '', amount: '', idempotencyKey: ''
+    sourceAccount: '',
+    destinationAccount: '',
+    amount: '',
+    idempotencyKey: '',
   });
   const [intLoading, setIntLoading] = useState(false);
   const [intSuccess, setIntSuccess] = useState('');
-  const [intError, setIntError]     = useState('');
+  const [intError, setIntError] = useState('');
 
   // ── External payout state ──
   const [payForm, setPayForm] = useState({
-    sourceAccount: '', amount: '', accountNumber: '',
-    bankCode: '', bankName: '', accountName: '', idempotencyKey: ''
+    sourceAccount: '',
+    amount: '',
+    accountNumber: '',
+    bankCode: '',
+    bankName: '',
+    accountName: '',
+    idempotencyKey: '',
   });
   const [payLoading, setPayLoading] = useState(false);
   const [paySuccess, setPaySuccess] = useState('');
-  const [payError, setPayError]     = useState('');
+  const [payError, setPayError] = useState('');
 
   // ── External funding state ──
   const [fundForm, setFundForm] = useState({
-    destinationAccount: '', amount: '', email: '', idempotencyKey: ''
+    destinationAccount: '',
+    amount: '',
+    email: '',
+    idempotencyKey: '',
   });
   const [fundLoading, setFundLoading] = useState(false);
   const [fundSuccess, setFundSuccess] = useState('');
-  const [fundError, setFundError]     = useState('');
+  const [fundError, setFundError] = useState('');
 
   // ── Pending transactions state ──
-  const [pending, setPending]               = useState([]);
+  const [pending, setPending] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
   const [pendingSuccess, setPendingSuccess] = useState('');
-  const [approvalModal, setApprovalModal]   = useState(null);
+  const [approvalModal, setApprovalModal] = useState(null);
   // SUCCESS = approve, REJECTED = reject
   const [approvalStatus, setApprovalStatus] = useState('SUCCESS');
   const [approvalLoading, setApprovalLoading] = useState(false);
-  const [approvalError, setApprovalError]     = useState('');
+  const [approvalError, setApprovalError] = useState('');
 
   // ── All transactions state ──
-  const [allTxns, setAllTxns]       = useState([]);
+  const [allTxns, setAllTxns] = useState([]);
   const [allLoading, setAllLoading] = useState(false);
-  const [allLoaded, setAllLoaded]   = useState(false);
+  const [allLoaded, setAllLoaded] = useState(false);
 
   // ── Webhook simulator state ──
-  const [webhookRef, setWebhookRef]         = useState('');
-  const [webhookEvent, setWebhookEvent]     = useState('transfer.success');
+  const [webhookRef, setWebhookRef] = useState('');
+  const [webhookEvent, setWebhookEvent] = useState('transfer.success');
   const [webhookLoading, setWebhookLoading] = useState(false);
   const [webhookSuccess, setWebhookSuccess] = useState('');
-  const [webhookError, setWebhookError]     = useState('');
+  const [webhookError, setWebhookError] = useState('');
 
   useEffect(() => {
     if (tabFromUrl === 'pending') loadPending();
-    if (tabFromUrl === 'all')     loadAll();
+    if (tabFromUrl === 'all') loadAll();
   }, [tabFromUrl]);
 
   async function handleInternal(e) {
     e.preventDefault();
-    setIntError(''); setIntSuccess('');
-    if (!intForm.sourceAccount || !intForm.destinationAccount ||
-        !intForm.amount || !intForm.idempotencyKey) {
-      setIntError('Please fill in all fields.'); return;
+    setIntError('');
+    setIntSuccess('');
+    if (
+      !intForm.sourceAccount ||
+      !intForm.destinationAccount ||
+      !intForm.amount ||
+      !intForm.idempotencyKey
+    ) {
+      setIntError('Please fill in all fields.');
+      return;
     }
     setIntLoading(true);
     try {
       const res = await api.post('/transactions/initiate', {
-        sourceAccount:      intForm.sourceAccount,
+        sourceAccount: intForm.sourceAccount,
         destinationAccount: intForm.destinationAccount,
-        amount:             Number(intForm.amount),
-        idempotencyKey:     intForm.idempotencyKey,
-        type:               'INTERNAL_TRANSFER',
+        amount: Number(intForm.amount),
+        idempotencyKey: intForm.idempotencyKey,
+        type: 'INTERNAL_TRANSFER',
       });
       setIntSuccess(
-        `Transfer initiated! Ref: ${res.data.data?.transactionReference || '—'}. Waiting for approver.`
+        `Transfer initiated! Ref: ${res.data.data?.transactionReference || '—'}. Waiting for approver.`,
       );
       setIntForm({ sourceAccount: '', destinationAccount: '', amount: '', idempotencyKey: '' });
     } catch (err) {
@@ -204,23 +226,36 @@ export default function Transactions() {
 
   async function handlePayout(e) {
     e.preventDefault();
-    setPayError(''); setPaySuccess('');
-    if (!payForm.sourceAccount || !payForm.amount || !payForm.accountNumber ||
-        !payForm.bankCode || !payForm.bankName || !payForm.accountName ||
-        !payForm.idempotencyKey) {
-      setPayError('Please fill in all fields.'); return;
+    setPayError('');
+    setPaySuccess('');
+    if (
+      !payForm.sourceAccount ||
+      !payForm.amount ||
+      !payForm.accountNumber ||
+      !payForm.bankCode ||
+      !payForm.bankName ||
+      !payForm.accountName ||
+      !payForm.idempotencyKey
+    ) {
+      setPayError('Please fill in all fields.');
+      return;
     }
     setPayLoading(true);
     try {
       await api.post('/external/payout', {
         ...payForm,
         amount: Number(payForm.amount),
-        type:   'EXTERNAL_PAYOUT',
+        type: 'EXTERNAL_PAYOUT',
       });
       setPaySuccess('Payout initiated! Waiting for approver.');
       setPayForm({
-        sourceAccount: '', amount: '', accountNumber: '',
-        bankCode: '', bankName: '', accountName: '', idempotencyKey: ''
+        sourceAccount: '',
+        amount: '',
+        accountNumber: '',
+        bankCode: '',
+        bankName: '',
+        accountName: '',
+        idempotencyKey: '',
       });
     } catch (err) {
       setPayError(err.response?.data?.message || 'Payout failed.');
@@ -231,17 +266,23 @@ export default function Transactions() {
 
   async function handleFunding(e) {
     e.preventDefault();
-    setFundError(''); setFundSuccess('');
-    if (!fundForm.destinationAccount || !fundForm.amount ||
-        !fundForm.email || !fundForm.idempotencyKey) {
-      setFundError('Please fill in all fields.'); return;
+    setFundError('');
+    setFundSuccess('');
+    if (
+      !fundForm.destinationAccount ||
+      !fundForm.amount ||
+      !fundForm.email ||
+      !fundForm.idempotencyKey
+    ) {
+      setFundError('Please fill in all fields.');
+      return;
     }
     setFundLoading(true);
     try {
       const res = await api.post('/external/fund', {
         ...fundForm,
         amount: Number(fundForm.amount),
-        type:   'EXTERNAL_FUNDING',
+        type: 'EXTERNAL_FUNDING',
       });
       const paymentUrl = res.data.data?.authorization_url || res.data.data?.paymentUrl;
       if (paymentUrl) {
@@ -274,11 +315,7 @@ export default function Transactions() {
     setAllLoading(true);
     try {
       const res = await api.get('/transactions/transactions?page=0&size=50');
-      setAllTxns(
-        res.data.data?.content ||
-        res.data.data ||
-        []
-      );
+      setAllTxns(res.data.data?.content || res.data.data || []);
       setAllLoaded(true);
     } catch {
       setAllTxns([]);
@@ -293,18 +330,17 @@ export default function Transactions() {
     try {
       await api.post('/transactions/approve', {
         transactionId: approvalModal.id,
-        status:        approvalStatus, // SUCCESS or REJECTED
+        status: approvalStatus, // SUCCESS or REJECTED
       });
-      const msg = approvalStatus === 'SUCCESS'
-        ? 'Transaction approved successfully!'
-        : 'Transaction rejected.';
+      const msg =
+        approvalStatus === 'SUCCESS'
+          ? 'Transaction approved successfully!'
+          : 'Transaction rejected.';
       setPendingSuccess(msg);
       setApprovalModal(null);
       loadPending();
     } catch (err) {
-      setApprovalError(
-        err.response?.data?.message || 'Could not process transaction.'
-      );
+      setApprovalError(err.response?.data?.message || 'Could not process transaction.');
     } finally {
       setApprovalLoading(false);
     }
@@ -312,9 +348,11 @@ export default function Transactions() {
 
   async function simulateWebhook(e) {
     e.preventDefault();
-    setWebhookError(''); setWebhookSuccess('');
+    setWebhookError('');
+    setWebhookSuccess('');
     if (!webhookRef) {
-      setWebhookError('Please enter a transaction reference.'); return;
+      setWebhookError('Please enter a transaction reference.');
+      return;
     }
     setWebhookLoading(true);
     try {
@@ -325,82 +363,88 @@ export default function Transactions() {
           status: webhookEvent === 'transfer.success' ? 'success' : 'failed',
         },
       });
-      setWebhookSuccess(
-        `Webhook simulated! Event "${webhookEvent}" sent for ref: ${webhookRef}`
-      );
+      setWebhookSuccess(`Webhook simulated! Event "${webhookEvent}" sent for ref: ${webhookRef}`);
       setWebhookRef('');
       loadPending();
     } catch (err) {
-      setWebhookError(
-        err.response?.data?.message || 'Webhook simulation failed.'
-      );
+      setWebhookError(err.response?.data?.message || 'Webhook simulation failed.');
     } finally {
       setWebhookLoading(false);
     }
   }
 
-
-
-
-
-
-
   return (
     <Layout>
-      <Topbar
-        title="Transactions"
-        subtitle="Manage and view transactions"
-      />
+      <Topbar title="Transactions" subtitle="Manage and view transactions" />
       <main className="p-7 flex flex-col gap-6">
-
         {/* Tabs — only show tabs relevant to role */}
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 flex-wrap w-fit">
           {TABS.map(({ key, label, icon }) => (
-            <button key={key} onClick={() => setTab(key)}
+            <button
+              key={key}
+              onClick={() => setTab(key)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
-                ${tabFromUrl === key
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}>
+                ${
+                  tabFromUrl === key
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+            >
               <i className={`ti ${icon} text-base`} /> {label}
             </button>
           ))}
         </div>
 
         {/* ── Internal Transfer ── */}
-        {tabFromUrl === 'internal' && (isMaker || isAdmin) && (
+        {tabFromUrl === 'internal' && isMaker && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">
-              Initiate internal transfer
-            </h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Initiate internal transfer</h2>
             <p className="text-xs text-gray-500 mb-4">
               Transfer funds between accounts within the platform.
             </p>
-            <Flow steps={['Maker initiates','Approver reviews','Transfer complete']} />
+            <Flow steps={['Maker initiates', 'Approver reviews', 'Transfer complete']} />
             <Alert success={intSuccess} error={intError} />
             <form onSubmit={handleInternal} className="grid grid-cols-2 gap-4">
-              <Field label="Source account number"
+              <Field
+                label="Source account number"
                 value={intForm.sourceAccount}
-                onChange={e => setIntForm({...intForm, sourceAccount: e.target.value})}
-                placeholder="e.g. 1234567890" />
-              <Field label="Destination account number"
+                onChange={(e) => setIntForm({ ...intForm, sourceAccount: e.target.value })}
+                placeholder="e.g. 1234567890"
+              />
+              <Field
+                label="Destination account number"
                 value={intForm.destinationAccount}
-                onChange={e => setIntForm({...intForm, destinationAccount: e.target.value})}
-                placeholder="e.g. 0987654321" />
-              <Field label="Amount" type="number"
+                onChange={(e) => setIntForm({ ...intForm, destinationAccount: e.target.value })}
+                placeholder="e.g. 0987654321"
+              />
+              <Field
+                label="Amount"
+                type="number"
                 value={intForm.amount}
-                onChange={e => setIntForm({...intForm, amount: e.target.value})}
-                placeholder="e.g. 500000" />
-              <Field label="Idempotency key"
+                onChange={(e) => setIntForm({ ...intForm, amount: e.target.value })}
+                placeholder="e.g. 500000"
+              />
+              <Field
+                label="Idempotency key"
                 value={intForm.idempotencyKey}
-                onChange={e => setIntForm({...intForm, idempotencyKey: e.target.value})}
-                placeholder="e.g. TXN-001" />
+                onChange={(e) => setIntForm({ ...intForm, idempotencyKey: e.target.value })}
+                placeholder="e.g. TXN-001"
+              />
               <div className="col-span-2 flex justify-end">
-                <button type="submit" disabled={intLoading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
-                  {intLoading
-                    ? <><i className="ti ti-loader animate-spin" /> Initiating...</>
-                    : <><i className="ti ti-arrow-right" /> Initiate transfer</>
-                  }
+                <button
+                  type="submit"
+                  disabled={intLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
+                >
+                  {intLoading ? (
+                    <>
+                      <i className="ti ti-loader animate-spin" /> Initiating...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti ti-arrow-right" /> Initiate transfer
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -408,56 +452,80 @@ export default function Transactions() {
         )}
 
         {/* ── External Payout ── */}
-        {tabFromUrl === 'payout' && (isMaker || isAdmin) && (
+        {tabFromUrl === 'payout' && isMaker && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">
-              Initiate external payout
-            </h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">Initiate external payout</h2>
             <p className="text-xs text-gray-500 mb-4">
               Send funds to an external bank account via Paystack.
             </p>
-            <Flow steps={['Maker initiates','Approver reviews','Paystack confirms','Complete']} />
+            <Flow
+              steps={['Maker initiates', 'Approver reviews', 'Paystack confirms', 'Complete']}
+            />
             <div className="flex items-start gap-2 bg-blue-50 text-blue-700 text-xs px-4 py-3 rounded-lg mb-4">
               <i className="ti ti-info-circle flex-shrink-0 mt-0.5" />
               After approval this payout stays Pending until Paystack confirms via webhook.
             </div>
             <Alert success={paySuccess} error={payError} />
             <form onSubmit={handlePayout} className="grid grid-cols-2 gap-4">
-              <Field label="Source account number"
+              <Field
+                label="Source account number"
                 value={payForm.sourceAccount}
-                onChange={e => setPayForm({...payForm, sourceAccount: e.target.value})}
-                placeholder="Internal account to debit" />
-              <Field label="Amount" type="number"
+                onChange={(e) => setPayForm({ ...payForm, sourceAccount: e.target.value })}
+                placeholder="Internal account to debit"
+              />
+              <Field
+                label="Amount"
+                type="number"
                 value={payForm.amount}
-                onChange={e => setPayForm({...payForm, amount: e.target.value})}
-                placeholder="e.g. 250000" />
-              <Field label="Recipient account number"
+                onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
+                placeholder="e.g. 250000"
+              />
+              <Field
+                label="Recipient account number"
                 value={payForm.accountNumber}
-                onChange={e => setPayForm({...payForm, accountNumber: e.target.value})}
-                placeholder="Recipient's account number" />
-              <Field label="Bank code"
+                onChange={(e) => setPayForm({ ...payForm, accountNumber: e.target.value })}
+                placeholder="Recipient's account number"
+              />
+              <Field
+                label="Bank code"
                 value={payForm.bankCode}
-                onChange={e => setPayForm({...payForm, bankCode: e.target.value})}
-                placeholder="e.g. 044" />
-              <Field label="Bank name"
+                onChange={(e) => setPayForm({ ...payForm, bankCode: e.target.value })}
+                placeholder="e.g. 044"
+              />
+              <Field
+                label="Bank name"
                 value={payForm.bankName}
-                onChange={e => setPayForm({...payForm, bankName: e.target.value})}
-                placeholder="e.g. Access Bank" />
-              <Field label="Account name"
+                onChange={(e) => setPayForm({ ...payForm, bankName: e.target.value })}
+                placeholder="e.g. Access Bank"
+              />
+              <Field
+                label="Account name"
                 value={payForm.accountName}
-                onChange={e => setPayForm({...payForm, accountName: e.target.value})}
-                placeholder="Recipient's full name" />
-              <Field label="Idempotency key" full
+                onChange={(e) => setPayForm({ ...payForm, accountName: e.target.value })}
+                placeholder="Recipient's full name"
+              />
+              <Field
+                label="Idempotency key"
+                full
                 value={payForm.idempotencyKey}
-                onChange={e => setPayForm({...payForm, idempotencyKey: e.target.value})}
-                placeholder="e.g. PAY-001" />
+                onChange={(e) => setPayForm({ ...payForm, idempotencyKey: e.target.value })}
+                placeholder="e.g. PAY-001"
+              />
               <div className="col-span-2 flex justify-end">
-                <button type="submit" disabled={payLoading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
-                  {payLoading
-                    ? <><i className="ti ti-loader animate-spin" /> Initiating...</>
-                    : <><i className="ti ti-send" /> Initiate payout</>
-                  }
+                <button
+                  type="submit"
+                  disabled={payLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
+                >
+                  {payLoading ? (
+                    <>
+                      <i className="ti ti-loader animate-spin" /> Initiating...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti ti-send" /> Initiate payout
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -465,40 +533,56 @@ export default function Transactions() {
         )}
 
         {/* ── External Funding ── */}
-        {tabFromUrl === 'funding' && (isMaker || isAdmin) && (
+        {tabFromUrl === 'funding' && isMaker && (
           <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">
-              External funding
-            </h2>
+            <h2 className="text-sm font-semibold text-gray-900 mb-1">External funding</h2>
             <p className="text-xs text-gray-500 mb-4">
               Fund a system account from an external source via Paystack.
             </p>
-            <Flow steps={['Submit request','Paystack processes','Account credited']} />
+            <Flow steps={['Submit request', 'Paystack processes', 'Account credited']} />
             <Alert success={fundSuccess} error={fundError} />
             <form onSubmit={handleFunding} className="grid grid-cols-2 gap-4">
-              <Field label="Destination account number"
+              <Field
+                label="Destination account number"
                 value={fundForm.destinationAccount}
-                onChange={e => setFundForm({...fundForm, destinationAccount: e.target.value})}
-                placeholder="Account to credit" />
-              <Field label="Amount" type="number"
+                onChange={(e) => setFundForm({ ...fundForm, destinationAccount: e.target.value })}
+                placeholder="Account to credit"
+              />
+              <Field
+                label="Amount"
+                type="number"
                 value={fundForm.amount}
-                onChange={e => setFundForm({...fundForm, amount: e.target.value})}
-                placeholder="e.g. 1000000" />
-              <Field label="Email" type="email"
+                onChange={(e) => setFundForm({ ...fundForm, amount: e.target.value })}
+                placeholder="e.g. 1000000"
+              />
+              <Field
+                label="Email"
+                type="email"
                 value={fundForm.email}
-                onChange={e => setFundForm({...fundForm, email: e.target.value})}
-                placeholder="Payer's email for Paystack" />
-              <Field label="Idempotency key"
+                onChange={(e) => setFundForm({ ...fundForm, email: e.target.value })}
+                placeholder="Payer's email for Paystack"
+              />
+              <Field
+                label="Idempotency key"
                 value={fundForm.idempotencyKey}
-                onChange={e => setFundForm({...fundForm, idempotencyKey: e.target.value})}
-                placeholder="e.g. FUND-001" />
+                onChange={(e) => setFundForm({ ...fundForm, idempotencyKey: e.target.value })}
+                placeholder="e.g. FUND-001"
+              />
               <div className="col-span-2 flex justify-end">
-                <button type="submit" disabled={fundLoading}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
-                  {fundLoading
-                    ? <><i className="ti ti-loader animate-spin" /> Initiating...</>
-                    : <><i className="ti ti-cash" /> Initiate funding</>
-                  }
+                <button
+                  type="submit"
+                  disabled={fundLoading}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
+                >
+                  {fundLoading ? (
+                    <>
+                      <i className="ti ti-loader animate-spin" /> Initiating...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti ti-cash" /> Initiate funding
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -511,15 +595,14 @@ export default function Transactions() {
             <div className="bg-white border border-gray-200 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-900">
-                    Pending transactions
-                  </h2>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    Transactions waiting for approval
-                  </p>
+                  <h2 className="text-sm font-semibold text-gray-900">Pending transactions</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Transactions waiting for approval</p>
                 </div>
-                <button onClick={loadPending} disabled={pendingLoading}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
+                <button
+                  onClick={loadPending}
+                  disabled={pendingLoading}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
+                >
                   <i className={`ti ti-refresh ${pendingLoading ? 'animate-spin' : ''}`} />
                   Refresh
                 </button>
@@ -543,8 +626,19 @@ export default function Transactions() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b-2 border-gray-100">
-                        {['Reference','Type','Source','Destination','Amount','Status','Action'].map(h => (
-                          <th key={h} className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                        {[
+                          'Reference',
+                          'Type',
+                          'Source',
+                          'Destination',
+                          'Amount',
+                          'Status',
+                          ...(isApprover ? ['Action'] : []),
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                          >
                             {h}
                           </th>
                         ))}
@@ -556,39 +650,45 @@ export default function Transactions() {
                           <td className="px-3 py-3 font-mono text-xs text-gray-600">
                             {t.transactionReference || '—'}
                           </td>
-                          <td className="px-3 py-3"><TypePill type={t.type} /></td>
+                          <td className="px-3 py-3">
+                            <TypePill type={t.type} />
+                          </td>
                           <td className="px-3 py-3 text-gray-500">
                             {t.sourceAccount?.accountNumber || '—'}
                           </td>
                           <td className="px-3 py-3 text-gray-500">
                             {t.destinationAccount?.accountNumber || '—'}
                           </td>
-                          <td className="px-3 py-3 font-medium">
-                            {formatMoney(t.amount)}
-                          </td>
-                          <td className="px-3 py-3"><Pill status={t.status} /></td>
+                          <td className="px-3 py-3 font-medium">{formatMoney(t.amount)}</td>
                           <td className="px-3 py-3">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setApprovalModal(t);
-                                  setApprovalStatus('SUCCESS');
-                                  setApprovalError('');
-                                }}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-all">
-                                <i className="ti ti-check" /> Approve
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setApprovalModal(t);
-                                  setApprovalStatus('REJECTED');
-                                  setApprovalError('');
-                                }}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-all">
-                                <i className="ti ti-x" /> Reject
-                              </button>
-                            </div>
+                            <Pill status={t.status} />
                           </td>
+                          {isApprover && (
+                            <td className="px-3 py-3">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setApprovalModal(t);
+                                    setApprovalStatus('SUCCESS');
+                                    setApprovalError('');
+                                  }}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition-all"
+                                >
+                                  <i className="ti ti-check" /> Approve
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setApprovalModal(t);
+                                    setApprovalStatus('REJECTED');
+                                    setApprovalError('');
+                                  }}
+                                  className="flex items-center gap-1 px-3 py-1.5 bg-red-500 text-white text-xs font-semibold rounded-lg hover:bg-red-600 transition-all"
+                                >
+                                  <i className="ti ti-x" /> Reject
+                                </button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -616,30 +716,42 @@ export default function Transactions() {
                   <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
                     Transaction reference
                   </label>
-                  <input value={webhookRef}
-                    onChange={e => setWebhookRef(e.target.value)}
+                  <input
+                    value={webhookRef}
+                    onChange={(e) => setWebhookRef(e.target.value)}
                     placeholder="Paste reference from approved payout"
-                    className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white placeholder:text-gray-300" />
+                    className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white placeholder:text-gray-300"
+                  />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
                     Simulate event
                   </label>
-                  <select value={webhookEvent}
-                    onChange={e => setWebhookEvent(e.target.value)}
-                    className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white">
+                  <select
+                    value={webhookEvent}
+                    onChange={(e) => setWebhookEvent(e.target.value)}
+                    className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white"
+                  >
                     <option value="transfer.success">transfer.success</option>
                     <option value="transfer.failed">transfer.failed</option>
                     <option value="transfer.reversed">transfer.reversed</option>
                   </select>
                 </div>
                 <div className="col-span-2 flex justify-end">
-                  <button type="submit" disabled={webhookLoading}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 disabled:opacity-60 transition-all">
-                    {webhookLoading
-                      ? <><i className="ti ti-loader animate-spin" /> Simulating...</>
-                      : <><i className="ti ti-player-play" /> Simulate webhook</>
-                    }
+                  <button
+                    type="submit"
+                    disabled={webhookLoading}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 disabled:opacity-60 transition-all"
+                  >
+                    {webhookLoading ? (
+                      <>
+                        <i className="ti ti-loader animate-spin" /> Simulating...
+                      </>
+                    ) : (
+                      <>
+                        <i className="ti ti-player-play" /> Simulate webhook
+                      </>
+                    )}
                   </button>
                 </div>
               </form>
@@ -652,15 +764,14 @@ export default function Transactions() {
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-sm font-semibold text-gray-900">
-                  All transactions
-                </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Full transaction history
-                </p>
+                <h2 className="text-sm font-semibold text-gray-900">All transactions</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Full transaction history</p>
               </div>
-              <button onClick={loadAll} disabled={allLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
+              <button
+                onClick={loadAll}
+                disabled={allLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
+              >
                 <i className={`ti ti-refresh ${allLoading ? 'animate-spin' : ''}`} />
                 {allLoaded ? 'Refresh' : 'Load transactions'}
               </button>
@@ -669,9 +780,7 @@ export default function Transactions() {
             {!allLoaded ? (
               <div className="text-center py-12">
                 <i className="ti ti-list text-3xl text-gray-200 block mb-2" />
-                <p className="text-sm text-gray-400">
-                  Click "Load transactions" to view history
-                </p>
+                <p className="text-sm text-gray-400">Click "Load transactions" to view history</p>
               </div>
             ) : allTxns.length === 0 ? (
               <div className="text-center py-12">
@@ -682,11 +791,16 @@ export default function Transactions() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b-2 border-gray-100">
-                      {['Reference','Type','Source','Destination','Amount','Status'].map(h => (
-                        <th key={h} className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                          {h}
-                        </th>
-                      ))}
+                      {['Reference', 'Type', 'Source', 'Destination', 'Amount', 'Status'].map(
+                        (h) => (
+                          <th
+                            key={h}
+                            className="text-left px-3 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wide"
+                          >
+                            {h}
+                          </th>
+                        ),
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -695,17 +809,19 @@ export default function Transactions() {
                         <td className="px-3 py-3 font-mono text-xs text-gray-600">
                           {t.transactionReference || '—'}
                         </td>
-                        <td className="px-3 py-3"><TypePill type={t.type} /></td>
+                        <td className="px-3 py-3">
+                          <TypePill type={t.type} />
+                        </td>
                         <td className="px-3 py-3 text-gray-500">
                           {t.sourceAccount?.accountNumber || '—'}
                         </td>
                         <td className="px-3 py-3 text-gray-500">
                           {t.destinationAccount?.accountNumber || '—'}
                         </td>
-                        <td className="px-3 py-3 font-medium">
-                          {formatMoney(t.amount)}
+                        <td className="px-3 py-3 font-medium">{formatMoney(t.amount)}</td>
+                        <td className="px-3 py-3">
+                          <Pill status={t.status} />
                         </td>
-                        <td className="px-3 py-3"><Pill status={t.status} /></td>
                       </tr>
                     ))}
                   </tbody>
@@ -714,16 +830,13 @@ export default function Transactions() {
             )}
           </div>
         )}
-
       </main>
 
       {/* ── Approval Modal ── */}
       {approvalModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-base font-semibold text-gray-900 mb-1">
-              Process transaction
-            </h3>
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Process transaction</h3>
             <p className="text-sm text-gray-500 mb-4">
               Review the details then confirm your decision.
             </p>
@@ -755,25 +868,37 @@ export default function Transactions() {
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                 Your decision
               </label>
-              <select value={approvalStatus}
-                onChange={e => setApprovalStatus(e.target.value)}
-                className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500">
+              <select
+                value={approvalStatus}
+                onChange={(e) => setApprovalStatus(e.target.value)}
+                className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500"
+              >
                 <option value="SUCCESS">Approve this transaction</option>
                 <option value="REJECTED">Reject this transaction</option>
               </select>
             </div>
 
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setApprovalModal(null)}
-                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-all">
+              <button
+                onClick={() => setApprovalModal(null)}
+                className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-all"
+              >
                 Cancel
               </button>
-              <button onClick={confirmApproval} disabled={approvalLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all">
-                {approvalLoading
-                  ? <><i className="ti ti-loader animate-spin" /> Processing...</>
-                  : <><i className="ti ti-check" /> Confirm</>
-                }
+              <button
+                onClick={confirmApproval}
+                disabled={approvalLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
+              >
+                {approvalLoading ? (
+                  <>
+                    <i className="ti ti-loader animate-spin" /> Processing...
+                  </>
+                ) : (
+                  <>
+                    <i className="ti ti-check" /> Confirm
+                  </>
+                )}
               </button>
             </div>
           </div>
