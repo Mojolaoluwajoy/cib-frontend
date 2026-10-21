@@ -1,16 +1,86 @@
-# React + Vite
+# CIB Platform — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web frontend for the CIB (Corporate Internet Banking) platform. Organizations onboard onto the
+platform, invite their staff, open accounts and move money through a maker–approver workflow.
 
-Currently, two official plugins are available:
+Built with React 19, Vite, Tailwind CSS, React Router and axios.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Requirements
 
-## React Compiler
+- Node.js 22 or newer
+- The CIB backend API running (by default on `http://localhost:1990`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Getting started
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Open http://localhost:5173 — you will be redirected to the login page.
+
+## Configuration
+
+The backend address is read from `VITE_API_URL`. To change it, copy `.env.example` to
+`.env.local` and edit the value:
+
+```bash
+cp .env.example .env.local
+```
+
+If `VITE_API_URL` is not set, the app uses `http://localhost:1990`. Vite bakes this value into
+the bundle at build time, so set it before running `npm run build` for a deployed environment.
+
+## Scripts
+
+| Command                | What it does                                 |
+| ---------------------- | -------------------------------------------- |
+| `npm run dev`          | Start the development server with hot reload |
+| `npm run build`        | Build for production into `dist/`            |
+| `npm run preview`      | Serve the production build locally           |
+| `npm run lint`         | Run ESLint                                   |
+| `npm run format`       | Format all files with Prettier               |
+| `npm run format:check` | Check formatting without changing files      |
+
+## Roles
+
+| Role          | Can do                                                                            |
+| ------------- | --------------------------------------------------------------------------------- |
+| `SUPER_ADMIN` | Approve organizations, manage all organizations and users, manage currencies      |
+| `ADMIN`       | Invite and manage users in their organization, manage accounts, view transactions |
+| `MAKER`       | Initiate internal transfers, external payouts and external funding                |
+| `APPROVER`    | Approve or reject pending transactions                                            |
+
+Access is enforced on each route in `src/App.jsx` and reflected in the sidebar
+(`src/components/Sidebar.jsx`). The backend must enforce the same rules — the frontend checks
+only control what is shown.
+
+## Project structure
+
+```
+src/
+  api/axios.js          shared API client (base URL, auth header, logout on 401)
+  context/AuthContext   login state, token validation on startup, 30-minute inactivity logout
+  components/           layout, sidebar, top bar
+  pages/                one file per screen
+  pages/settings/       password and currency settings
+```
+
+## Authentication
+
+On login the JWT and user details are stored in `localStorage` under `cib_user`. Every request
+sends the token as a `Bearer` header. Any `401` response, or 30 minutes without activity, signs
+the user out.
+
+## Development-only tools
+
+The Transactions page shows a **Testing Tools** panel for simulating Paystack webhooks. It only
+appears when running `npm run dev` and is left out of production builds.
+
+## Branches and CI
+
+- `main` — stable branch
+- `dev` — day-to-day development; open pull requests from here into `main`
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on pushes and pull requests to both branches:
+format check, lint and build. All three must pass.
