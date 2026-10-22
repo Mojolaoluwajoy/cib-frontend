@@ -96,6 +96,8 @@ function Field({ label, value, onChange, type = 'text', placeholder, full }) {
   );
 }
 
+const PAGE_SIZE = 20;
+
 export default function Transactions() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -178,6 +180,9 @@ export default function Transactions() {
   const [allTxns, setAllTxns] = useState([]);
   const [allLoading, setAllLoading] = useState(false);
   const [allLoaded, setAllLoaded] = useState(false);
+  const [allPage, setAllPage] = useState(0);
+  const [allTotalPages, setAllTotalPages] = useState(1);
+  const [allTotal, setAllTotal] = useState(0);
 
   // ── Webhook simulator state ──
   const [webhookRef, setWebhookRef] = useState('');
@@ -189,6 +194,8 @@ export default function Transactions() {
   useEffect(() => {
     if (tabFromUrl === 'pending') loadPending();
     if (tabFromUrl === 'all') loadAll();
+    // Only refetch when the tab changes; paging is driven by the Previous/Next buttons
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabFromUrl]);
 
   async function handleInternal(e) {
@@ -311,11 +318,19 @@ export default function Transactions() {
     }
   }
 
-  async function loadAll() {
+  async function loadAll(page = allPage) {
     setAllLoading(true);
     try {
-      const res = await api.get('/transactions/transactions?page=0&size=50');
-      setAllTxns(res.data.data?.content || res.data.data || []);
+      const res = await api.get('/transactions/transactions', {
+        params: { page, size: PAGE_SIZE },
+      });
+      // Backend returns a Spring Page; newer Spring versions nest the counts under "page"
+      const data = res.data.data;
+      const content = data?.content || data || [];
+      setAllTxns(content);
+      setAllPage(page);
+      setAllTotalPages(data?.totalPages ?? data?.page?.totalPages ?? 1);
+      setAllTotal(data?.totalElements ?? data?.page?.totalElements ?? content.length);
       setAllLoaded(true);
     } catch {
       setAllTxns([]);
@@ -770,7 +785,7 @@ export default function Transactions() {
                 <p className="text-xs text-gray-500 mt-0.5">Full transaction history</p>
               </div>
               <button
-                onClick={loadAll}
+                onClick={() => loadAll()}
                 disabled={allLoading}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
               >
@@ -828,6 +843,27 @@ export default function Transactions() {
                     ))}
                   </tbody>
                 </table>
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-xs text-gray-500">
+                    Page {allPage + 1} of {Math.max(allTotalPages, 1)} · {allTotal} transactions
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => loadAll(allPage - 1)}
+                      disabled={allLoading || allPage === 0}
+                      className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-all"
+                    >
+                      <i className="ti ti-chevron-left" /> Previous
+                    </button>
+                    <button
+                      onClick={() => loadAll(allPage + 1)}
+                      disabled={allLoading || allPage + 1 >= allTotalPages}
+                      className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-all"
+                    >
+                      Next <i className="ti ti-chevron-right" />
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
