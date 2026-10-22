@@ -5,6 +5,9 @@ import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 
+// Number of rows per page in All Transactions
+const PAGE_SIZE = 20;
+
 function Pill({ status }) {
   const map = {
     APPROVED: 'bg-green-50 text-green-700',
@@ -95,8 +98,6 @@ function Field({ label, value, onChange, type = 'text', placeholder, full }) {
     </div>
   );
 }
-
-const PAGE_SIZE = 20;
 
 export default function Transactions() {
   const { user } = useAuth();
