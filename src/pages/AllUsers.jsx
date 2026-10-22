@@ -2,20 +2,7 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    ACTIVE: 'bg-green-50 text-green-700',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {status}
-    </span>
-  );
-}
+import { Pill } from '../components/Pill';
 
 const EDITABLE_FIELDS = [
   { key: 'firstName', label: 'First name', type: 'text', placeholder: 'Enter new first name' },

@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import { formatMoney } from '../utils/format';
 
 const ACCOUNT_TYPES = ['CURRENT', 'SAVINGS', 'PAYROLL', 'REVENUE', 'EXPENSE', 'ASSET'];
 const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
@@ -22,15 +23,6 @@ function typeColor(type) {
       text: 'text-gray-700',
       icon: 'ti-building-bank',
     }
-  );
-}
-
-function formatMoney(amount, currency = 'NGN') {
-  if (amount === null || amount === undefined) return '—';
-  const symbols = { NGN: '₦', USD: '$', GBP: '£', EUR: '€' };
-  return (
-    (symbols[currency] || currency) +
-    Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })
   );
 }
 
