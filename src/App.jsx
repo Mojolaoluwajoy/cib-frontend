@@ -48,11 +48,11 @@ export default function App() {
             }
           />
 
-          {/* ── Org onboarding — SUPER_ADMIN approvals + public registration ── */}
+          {/* ── Org approvals — SUPER_ADMIN only (public registration lives at /register) ── */}
           <Route
             path="/org-onboarding"
             element={
-              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <OrgOnboarding />
               </ProtectedRoute>
             }
