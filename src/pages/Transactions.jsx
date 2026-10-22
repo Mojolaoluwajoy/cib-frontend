@@ -213,7 +213,7 @@ export default function Transactions() {
         amount: Number(payForm.amount),
         type: 'EXTERNAL_PAYOUT',
       };
-      await api.post('/external/payout', {
+      await api.post('/external/transaction/payout', {
         ...payload,
         idempotencyKey: idempotencyKeyFor(payKeyRef, payload),
       });
@@ -244,21 +244,25 @@ export default function Transactions() {
     }
     setFundLoading(true);
     try {
+      // Backend FundRequest names the account being funded "accountNumber"
       const payload = {
-        ...fundForm,
+        accountNumber: fundForm.destinationAccount,
         amount: Number(fundForm.amount),
+        email: fundForm.email,
         type: 'EXTERNAL_FUNDING',
       };
-      const res = await api.post('/external/fund', {
+      const res = await api.post('/external/transaction/fund', {
         ...payload,
         idempotencyKey: idempotencyKeyFor(fundKeyRef, payload),
       });
-      const paymentUrl = res.data.data?.authorization_url || res.data.data?.paymentUrl;
+      // Backend passes through Paystack's response: { status, message, data: { authorization_url, reference } }
+      const paystack = res.data.data?.data || res.data.data;
+      const paymentUrl = paystack?.authorization_url || paystack?.paymentUrl;
       if (paymentUrl) {
         setFundSuccess('Funding initiated! Opening Paystack...');
         setTimeout(() => window.open(paymentUrl, '_blank'), 1500);
       } else {
-        setFundSuccess(`Funding initiated! Ref: ${res.data.data?.reference || '—'}`);
+        setFundSuccess(`Funding initiated! Ref: ${paystack?.reference || '—'}`);
       }
       fundKeyRef.current = null;
       setFundForm({ destinationAccount: '', amount: '', email: '' });
