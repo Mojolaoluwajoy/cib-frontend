@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
@@ -96,6 +96,16 @@ function Field({ label, value, onChange, type = 'text', placeholder, full }) {
   );
 }
 
+// Returns the idempotency key for a request. Retrying the exact same request reuses its key so
+// the backend can drop the duplicate; any change to the request gets a fresh key.
+function idempotencyKeyFor(keyRef, payload) {
+  const body = JSON.stringify(payload);
+  if (keyRef.current?.body !== body) {
+    keyRef.current = { body, key: crypto.randomUUID() };
+  }
+  return keyRef.current.key;
+}
+
 export default function Transactions() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -133,8 +143,8 @@ export default function Transactions() {
     sourceAccount: '',
     destinationAccount: '',
     amount: '',
-    idempotencyKey: '',
   });
+  const intKeyRef = useRef(null);
   const [intLoading, setIntLoading] = useState(false);
   const [intSuccess, setIntSuccess] = useState('');
   const [intError, setIntError] = useState('');
@@ -147,8 +157,8 @@ export default function Transactions() {
     bankCode: '',
     bankName: '',
     accountName: '',
-    idempotencyKey: '',
   });
+  const payKeyRef = useRef(null);
   const [payLoading, setPayLoading] = useState(false);
   const [paySuccess, setPaySuccess] = useState('');
   const [payError, setPayError] = useState('');
@@ -158,8 +168,8 @@ export default function Transactions() {
     destinationAccount: '',
     amount: '',
     email: '',
-    idempotencyKey: '',
   });
+  const fundKeyRef = useRef(null);
   const [fundLoading, setFundLoading] = useState(false);
   const [fundSuccess, setFundSuccess] = useState('');
   const [fundError, setFundError] = useState('');
@@ -195,28 +205,27 @@ export default function Transactions() {
     e.preventDefault();
     setIntError('');
     setIntSuccess('');
-    if (
-      !intForm.sourceAccount ||
-      !intForm.destinationAccount ||
-      !intForm.amount ||
-      !intForm.idempotencyKey
-    ) {
+    if (!intForm.sourceAccount || !intForm.destinationAccount || !intForm.amount) {
       setIntError('Please fill in all fields.');
       return;
     }
     setIntLoading(true);
     try {
-      const res = await api.post('/transactions/initiate', {
+      const payload = {
         sourceAccount: intForm.sourceAccount,
         destinationAccount: intForm.destinationAccount,
         amount: Number(intForm.amount),
-        idempotencyKey: intForm.idempotencyKey,
         type: 'INTERNAL_TRANSFER',
+      };
+      const res = await api.post('/transactions/initiate', {
+        ...payload,
+        idempotencyKey: idempotencyKeyFor(intKeyRef, payload),
       });
       setIntSuccess(
         `Transfer initiated! Ref: ${res.data.data?.transactionReference || '—'}. Waiting for approver.`,
       );
-      setIntForm({ sourceAccount: '', destinationAccount: '', amount: '', idempotencyKey: '' });
+      intKeyRef.current = null;
+      setIntForm({ sourceAccount: '', destinationAccount: '', amount: '' });
     } catch (err) {
       setIntError(err.response?.data?.message || 'Transfer failed.');
     } finally {
@@ -234,20 +243,24 @@ export default function Transactions() {
       !payForm.accountNumber ||
       !payForm.bankCode ||
       !payForm.bankName ||
-      !payForm.accountName ||
-      !payForm.idempotencyKey
+      !payForm.accountName
     ) {
       setPayError('Please fill in all fields.');
       return;
     }
     setPayLoading(true);
     try {
-      await api.post('/external/payout', {
+      const payload = {
         ...payForm,
         amount: Number(payForm.amount),
         type: 'EXTERNAL_PAYOUT',
+      };
+      await api.post('/external/payout', {
+        ...payload,
+        idempotencyKey: idempotencyKeyFor(payKeyRef, payload),
       });
       setPaySuccess('Payout initiated! Waiting for approver.');
+      payKeyRef.current = null;
       setPayForm({
         sourceAccount: '',
         amount: '',
@@ -255,7 +268,6 @@ export default function Transactions() {
         bankCode: '',
         bankName: '',
         accountName: '',
-        idempotencyKey: '',
       });
     } catch (err) {
       setPayError(err.response?.data?.message || 'Payout failed.');
@@ -268,21 +280,20 @@ export default function Transactions() {
     e.preventDefault();
     setFundError('');
     setFundSuccess('');
-    if (
-      !fundForm.destinationAccount ||
-      !fundForm.amount ||
-      !fundForm.email ||
-      !fundForm.idempotencyKey
-    ) {
+    if (!fundForm.destinationAccount || !fundForm.amount || !fundForm.email) {
       setFundError('Please fill in all fields.');
       return;
     }
     setFundLoading(true);
     try {
-      const res = await api.post('/external/fund', {
+      const payload = {
         ...fundForm,
         amount: Number(fundForm.amount),
         type: 'EXTERNAL_FUNDING',
+      };
+      const res = await api.post('/external/fund', {
+        ...payload,
+        idempotencyKey: idempotencyKeyFor(fundKeyRef, payload),
       });
       const paymentUrl = res.data.data?.authorization_url || res.data.data?.paymentUrl;
       if (paymentUrl) {
@@ -291,7 +302,8 @@ export default function Transactions() {
       } else {
         setFundSuccess(`Funding initiated! Ref: ${res.data.data?.reference || '—'}`);
       }
-      setFundForm({ destinationAccount: '', amount: '', email: '', idempotencyKey: '' });
+      fundKeyRef.current = null;
+      setFundForm({ destinationAccount: '', amount: '', email: '' });
     } catch (err) {
       setFundError(err.response?.data?.message || 'Funding failed.');
     } finally {
@@ -424,12 +436,6 @@ export default function Transactions() {
                 onChange={(e) => setIntForm({ ...intForm, amount: e.target.value })}
                 placeholder="e.g. 500000"
               />
-              <Field
-                label="Idempotency key"
-                value={intForm.idempotencyKey}
-                onChange={(e) => setIntForm({ ...intForm, idempotencyKey: e.target.value })}
-                placeholder="e.g. TXN-001"
-              />
               <div className="col-span-2 flex justify-end">
                 <button
                   type="submit"
@@ -504,13 +510,6 @@ export default function Transactions() {
                 onChange={(e) => setPayForm({ ...payForm, accountName: e.target.value })}
                 placeholder="Recipient's full name"
               />
-              <Field
-                label="Idempotency key"
-                full
-                value={payForm.idempotencyKey}
-                onChange={(e) => setPayForm({ ...payForm, idempotencyKey: e.target.value })}
-                placeholder="e.g. PAY-001"
-              />
               <div className="col-span-2 flex justify-end">
                 <button
                   type="submit"
@@ -561,12 +560,6 @@ export default function Transactions() {
                 value={fundForm.email}
                 onChange={(e) => setFundForm({ ...fundForm, email: e.target.value })}
                 placeholder="Payer's email for Paystack"
-              />
-              <Field
-                label="Idempotency key"
-                value={fundForm.idempotencyKey}
-                onChange={(e) => setFundForm({ ...fundForm, idempotencyKey: e.target.value })}
-                placeholder="e.g. FUND-001"
               />
               <div className="col-span-2 flex justify-end">
                 <button
