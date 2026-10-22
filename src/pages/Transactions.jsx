@@ -3,10 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
 import { Pill, TypePill } from '../components/Pill';
 import Alert from '../components/Alert';
 import { formatMoney } from '../utils/format';
+import api from '../api/axios';
 
 function Flow({ steps }) {
   return (
