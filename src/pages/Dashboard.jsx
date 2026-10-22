@@ -4,6 +4,8 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import { Pill } from '../components/Pill';
+import { formatMoney } from '../utils/format';
 
 // ── Reusable metric card ──
 function MetricCard({ label, value, sub, icon, color }) {
@@ -22,32 +24,7 @@ function MetricCard({ label, value, sub, icon, color }) {
 }
 
 // ── Status pill ──
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    ACTIVE: 'bg-green-50 text-green-700',
-    COMPLETED: 'bg-green-50 text-green-700',
-    SUCCESS: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
-    DISABLED: 'bg-gray-100 text-gray-500',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    FAILED: 'bg-red-50 text-red-700',
-    IN_REVIEW: 'bg-blue-50 text-blue-700',
-  };
-  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
-  );
-}
-
 // ── Format money ──
-function formatMoney(amount) {
-  if (amount === null || amount === undefined) return '—';
-  return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-}
-
 // ══════════════════════════════════════════════════════
 // SUPER_ADMIN DASHBOARD
 // Shows org-level metrics only — no transactions/accounts

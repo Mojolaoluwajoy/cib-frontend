@@ -3,18 +3,7 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    ACTIVE: 'bg-green-50 text-green-700',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-  };
-  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
-  );
-}
+import { Pill } from '../components/Pill';
 
 const TABS = ['Send Invite', 'Complete Registration', 'All Users'];
 

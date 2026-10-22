@@ -3,22 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    DISABLED: 'bg-gray-100 text-gray-500',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {status}
-    </span>
-  );
-}
+import { Pill } from '../components/Pill';
 
 export default function Organizations() {
   const [orgs, setOrgs] = useState([]);

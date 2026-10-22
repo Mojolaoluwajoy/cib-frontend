@@ -4,59 +4,9 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    SUCCESS: 'bg-green-50 text-green-700',
-    COMPLETED: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    FAILED: 'bg-red-50 text-red-700',
-    EXPIRED: 'bg-gray-100 text-gray-500',
-    REVERSED: 'bg-purple-50 text-purple-700',
-  };
-  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
-  );
-}
-
-function TypePill({ type }) {
-  const map = {
-    INTERNAL_TRANSFER: 'bg-blue-50 text-blue-700',
-    EXTERNAL_PAYOUT: 'bg-purple-50 text-purple-700',
-    EXTERNAL_FUNDING: 'bg-green-50 text-green-700',
-  };
-  const cls = map[(type || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>
-      {(type || '').replace(/_/g, ' ')}
-    </span>
-  );
-}
-
-function formatMoney(amount) {
-  if (!amount && amount !== 0) return '—';
-  return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-}
-
-function Alert({ success, error }) {
-  if (success)
-    return (
-      <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-        <i className="ti ti-circle-check" /> {success}
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex items-center gap-2 bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-        <i className="ti ti-alert-circle" /> {error}
-      </div>
-    );
-  return null;
-}
+import { Pill, TypePill } from '../components/Pill';
+import Alert from '../components/Alert';
+import { formatMoney } from '../utils/format';
 
 function Flow({ steps }) {
   return (
