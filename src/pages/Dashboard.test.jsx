@@ -54,4 +54,15 @@ describe('Dashboard', () => {
     renderAs('MAKER');
     expect(await screen.findByText('9876543210')).toBeInTheDocument();
   });
+
+  it('says why pending approvals are missing instead of showing an empty list', async () => {
+    api.get.mockImplementation((url) =>
+      url === '/transactions/pending'
+        ? Promise.reject({ response: { status: 500, data: { message: 'Database unavailable' } } })
+        : Promise.resolve({ data: { data: [] } }),
+    );
+    renderAs('APPROVER');
+    expect(await screen.findByText('Database unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('No pending transactions')).not.toBeInTheDocument();
+  });
 });

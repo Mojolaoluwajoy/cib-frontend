@@ -4,6 +4,8 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
 import { Pill } from '../components/Pill';
 // ══════════════════════════════════════════════
 // MULTI-STEP REGISTRATION FORM
@@ -294,6 +296,7 @@ function OrgApprovalsTable() {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [modal, setModal] = useState(null);
   const [approvalForm, setApprovalForm] = useState({
     organizationStatus: 'APPROVED',
@@ -305,12 +308,13 @@ function OrgApprovalsTable() {
 
   async function loadOrgs() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/organizations/viewAll');
       setOrgs(res.data.data || []);
       setLoaded(true);
-    } catch {
-      setOrgs([]);
+    } catch (err) {
+      setLoadError(loadErrorMessage(err, 'organizations'));
     } finally {
       setLoading(false);
     }
@@ -380,7 +384,9 @@ function OrgApprovalsTable() {
           </div>
         )}
 
-        {!loaded ? (
+        {loadError ? (
+          <LoadError message={loadError} onRetry={loadOrgs} />
+        ) : !loaded ? (
           <div className="text-center py-12">
             <i className="ti ti-building text-3xl text-gray-200 block mb-2" />
             <p className="text-sm text-gray-400">

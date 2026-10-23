@@ -2,6 +2,8 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
 import { Pill } from '../components/Pill';
 
 const EDITABLE_FIELDS = [
@@ -14,6 +16,7 @@ export default function AllUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
 
@@ -27,13 +30,14 @@ export default function AllUsers() {
 
   async function loadUsers() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/users/viewAll');
       const all = (res.data.data || []).filter((u) => u.role !== 'SUPER_ADMIN');
       setUsers(all);
       setLoaded(true);
-    } catch {
-      setUsers([]);
+    } catch (err) {
+      setLoadError(loadErrorMessage(err, 'users'));
     } finally {
       setLoading(false);
     }
@@ -147,7 +151,9 @@ export default function AllUsers() {
             </div>
           )}
 
-          {!loaded ? (
+          {loadError ? (
+            <LoadError message={loadError} onRetry={loadUsers} />
+          ) : !loaded ? (
             <div className="text-center py-12">
               <i className="ti ti-users text-3xl text-gray-200 block mb-2" />
               <p className="text-sm text-gray-400">Click "Load all users" to view</p>

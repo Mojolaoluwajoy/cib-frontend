@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Topbar from '../../components/Topbar';
 import api from '../../api/axios';
+import LoadError from '../../components/LoadError';
+import { loadErrorMessage } from '../../utils/loadError';
 import { Pill } from '../../components/Pill';
 
 // Inactive currencies are shown in red, unlike inactive users
@@ -19,6 +21,7 @@ export default function SettingsCurrency() {
   const [selectedAction, setSelectedAction] = useState('');
   const [currencies, setCurrencies] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
   const [updateCode, setUpdateCode] = useState('NGN');
   const [updateStatus, setUpdateStatus] = useState('ACTIVE');
@@ -30,6 +33,7 @@ export default function SettingsCurrency() {
   function selectAction(key) {
     const next = key === selectedAction ? '' : key;
     setSelectedAction(next);
+    setLoadError('');
     if (next === 'view') {
       loadAllCurrencies();
     } else {
@@ -39,11 +43,13 @@ export default function SettingsCurrency() {
 
   async function loadAllCurrencies() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/currencies/all');
       setCurrencies(res.data.data || []);
-    } catch {
+    } catch (err) {
       setCurrencies([]);
+      setLoadError(loadErrorMessage(err, 'currencies'));
     } finally {
       setLoading(false);
     }
@@ -51,11 +57,13 @@ export default function SettingsCurrency() {
 
   async function loadByStatus() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get(`/currencies/status/${filterStatus}`);
       setCurrencies(res.data.data || []);
-    } catch {
+    } catch (err) {
       setCurrencies([]);
+      setLoadError(loadErrorMessage(err, 'currencies'));
     } finally {
       setLoading(false);
     }
@@ -143,6 +151,8 @@ export default function SettingsCurrency() {
 
             {loading ? (
               <p className="text-sm text-gray-400 text-center py-6">Loading...</p>
+            ) : loadError ? (
+              <LoadError message={loadError} onRetry={loadAllCurrencies} />
             ) : currencies.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-6">No currencies found</p>
             ) : (
@@ -217,7 +227,9 @@ export default function SettingsCurrency() {
               </button>
             </div>
 
-            {currencies.length === 0 ? (
+            {loadError ? (
+              <LoadError message={loadError} onRetry={loadByStatus} />
+            ) : currencies.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-6">
                 Click "Apply filter" to see results
               </p>
