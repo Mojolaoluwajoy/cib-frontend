@@ -222,6 +222,9 @@ function OperationalDashboard({ user }) {
 
   const [loading, setLoading] = useState(true);
 
+  const isApprover = user?.role === 'APPROVER';
+  const canSeePending = user?.role !== 'MAKER';
+
   async function loadOrgDetails() {
     try {
       const res = await api.get('/organizations/viewAll');
@@ -269,11 +272,10 @@ function OperationalDashboard({ user }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats();
     loadRecentTransactions();
-    loadPending();
+    // The backend only lists pending transactions for approvers and admins
+    if (canSeePending) loadPending();
     loadOrgDetails();
-  }, []);
-
-  const isApprover = user?.role === 'APPROVER';
+  }, [canSeePending]);
 
   return (
     <main className="p-7 flex flex-col gap-6">
@@ -362,7 +364,7 @@ function OperationalDashboard({ user }) {
       </div>
 
       {/* Row: Recent transactions + Pending approvals */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className={`grid gap-5 ${canSeePending ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {/* Recent transactions list */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -421,47 +423,52 @@ function OperationalDashboard({ user }) {
         </div>
 
         {/* Pending approvals list */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
-            <Link to="/transactions?tab=pending" className="text-xs text-blue-600 hover:underline">
-              View all →
-            </Link>
-          </div>
+        {canSeePending && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
+              <Link
+                to="/transactions?tab=pending"
+                className="text-xs text-blue-600 hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
 
-          {loading ? (
-            <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
-          ) : pending.length === 0 ? (
-            <div className="text-center py-10">
-              <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
-              <p className="text-sm text-gray-400">No pending transactions</p>
-            </div>
-          ) : (
-            <div className="flex flex-col divide-y divide-gray-100">
-              {pending.slice(0, 4).map((t, i) => (
-                <div key={i} className="flex items-center gap-3 py-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-                    <i className="ti ti-clock text-amber-600 text-base" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {t.transactionReference || '—'}
+            {loading ? (
+              <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+            ) : pending.length === 0 ? (
+              <div className="text-center py-10">
+                <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
+                <p className="text-sm text-gray-400">No pending transactions</p>
+              </div>
+            ) : (
+              <div className="flex flex-col divide-y divide-gray-100">
+                {pending.slice(0, 4).map((t, i) => (
+                  <div key={i} className="flex items-center gap-3 py-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                      <i className="ti ti-clock text-amber-600 text-base" />
                     </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {(t.type || '').replace(/_/g, ' ')}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {t.transactionReference || '—'}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {(t.type || '').replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {formatMoney(t.amount)}
+                      </div>
+                      <Pill status={t.status} />
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatMoney(t.amount)}
-                    </div>
-                    <Pill status={t.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quick actions */}
