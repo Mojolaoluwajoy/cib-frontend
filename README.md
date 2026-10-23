@@ -39,6 +39,8 @@ the bundle at build time, so set it before running `npm run build` for a deploye
 | `npm run build`        | Build for production into `dist/`            |
 | `npm run preview`      | Serve the production build locally           |
 | `npm run lint`         | Run ESLint                                   |
+| `npm test`             | Run the tests once                           |
+| `npm run test:watch`   | Run the tests and re-run on changes          |
 | `npm run format`       | Format all files with Prettier               |
 | `npm run format:check` | Check formatting without changing files      |
 
@@ -83,4 +85,4 @@ appears when running `npm run dev` and is left out of production builds.
 - `dev` — day-to-day development; open pull requests from here into `main`
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on pushes and pull requests to both branches:
-format check, lint and build. All three must pass.
+format check, lint, tests and build. All four must pass.
