@@ -29,7 +29,11 @@ export default function ForgotPassword() {
     }
     setStep1Loading(true);
     try {
-      await api.post('/auth/password/token', email);
+      // The backend reads this body as a raw string. Sent as JSON, axios would wrap it in
+      // quotes ("jane@corp.com") and the email lookup would fail, so send plain text.
+      await api.post('/auth/password/token', email, {
+        headers: { 'Content-Type': 'text/plain' },
+      });
       setStep1Success(`Token sent to ${email}! Check your inbox.`);
       setTimeout(() => setStep(2), 1500);
     } catch (err) {
