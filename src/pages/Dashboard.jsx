@@ -4,6 +4,8 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import { Pill } from '../components/Pill';
+import { formatMoney } from '../utils/format';
 
 // ── Reusable metric card ──
 function MetricCard({ label, value, sub, icon, color }) {
@@ -22,32 +24,7 @@ function MetricCard({ label, value, sub, icon, color }) {
 }
 
 // ── Status pill ──
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    ACTIVE: 'bg-green-50 text-green-700',
-    COMPLETED: 'bg-green-50 text-green-700',
-    SUCCESS: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
-    DISABLED: 'bg-gray-100 text-gray-500',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    FAILED: 'bg-red-50 text-red-700',
-    IN_REVIEW: 'bg-blue-50 text-blue-700',
-  };
-  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
-  );
-}
-
 // ── Format money ──
-function formatMoney(amount) {
-  if (amount === null || amount === undefined) return '—';
-  return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-}
-
 // ══════════════════════════════════════════════════════
 // SUPER_ADMIN DASHBOARD
 // Shows org-level metrics only — no transactions/accounts
@@ -245,6 +222,9 @@ function OperationalDashboard({ user }) {
 
   const [loading, setLoading] = useState(true);
 
+  const isApprover = user?.role === 'APPROVER';
+  const canSeePending = user?.role !== 'MAKER';
+
   async function loadOrgDetails() {
     try {
       const res = await api.get('/organizations/viewAll');
@@ -292,11 +272,10 @@ function OperationalDashboard({ user }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats();
     loadRecentTransactions();
-    loadPending();
+    // The backend only lists pending transactions for approvers and admins
+    if (canSeePending) loadPending();
     loadOrgDetails();
-  }, []);
-
-  const isApprover = user?.role === 'APPROVER';
+  }, [canSeePending]);
 
   return (
     <main className="p-7 flex flex-col gap-6">
@@ -385,7 +364,7 @@ function OperationalDashboard({ user }) {
       </div>
 
       {/* Row: Recent transactions + Pending approvals */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className={`grid gap-5 ${canSeePending ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {/* Recent transactions list */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -444,47 +423,52 @@ function OperationalDashboard({ user }) {
         </div>
 
         {/* Pending approvals list */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
-            <Link to="/transactions?tab=pending" className="text-xs text-blue-600 hover:underline">
-              View all →
-            </Link>
-          </div>
+        {canSeePending && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
+              <Link
+                to="/transactions?tab=pending"
+                className="text-xs text-blue-600 hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
 
-          {loading ? (
-            <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
-          ) : pending.length === 0 ? (
-            <div className="text-center py-10">
-              <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
-              <p className="text-sm text-gray-400">No pending transactions</p>
-            </div>
-          ) : (
-            <div className="flex flex-col divide-y divide-gray-100">
-              {pending.slice(0, 4).map((t, i) => (
-                <div key={i} className="flex items-center gap-3 py-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-                    <i className="ti ti-clock text-amber-600 text-base" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {t.transactionReference || '—'}
+            {loading ? (
+              <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+            ) : pending.length === 0 ? (
+              <div className="text-center py-10">
+                <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
+                <p className="text-sm text-gray-400">No pending transactions</p>
+              </div>
+            ) : (
+              <div className="flex flex-col divide-y divide-gray-100">
+                {pending.slice(0, 4).map((t, i) => (
+                  <div key={i} className="flex items-center gap-3 py-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                      <i className="ti ti-clock text-amber-600 text-base" />
                     </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {(t.type || '').replace(/_/g, ' ')}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {t.transactionReference || '—'}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {(t.type || '').replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {formatMoney(t.amount)}
+                      </div>
+                      <Pill status={t.status} />
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatMoney(t.amount)}
-                    </div>
-                    <Pill status={t.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quick actions */}

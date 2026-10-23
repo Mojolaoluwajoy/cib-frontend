@@ -3,47 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    ACTIVE: 'bg-green-50 text-green-700',
-    COMPLETED: 'bg-green-50 text-green-700',
-    SUCCESS: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    FAILED: 'bg-red-50 text-red-700',
-    DISABLED: 'bg-gray-100 text-gray-500',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function TypePill({ type }) {
-  const map = {
-    INTERNAL_TRANSFER: 'bg-blue-50 text-blue-700',
-    EXTERNAL_PAYOUT: 'bg-purple-50 text-purple-700',
-    EXTERNAL_FUNDING: 'bg-green-50 text-green-700',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(type || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {(type || '').replace(/_/g, ' ')}
-    </span>
-  );
-}
-
-function formatMoney(amount) {
-  if (!amount && amount !== 0) return '—';
-  return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-}
+import { Pill, TypePill } from '../components/Pill';
+import { formatMoney } from '../utils/format';
 
 const TABS = [
   { key: 'overview', label: 'Overview', icon: 'ti-layout-dashboard' },

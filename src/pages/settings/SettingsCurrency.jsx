@@ -3,17 +3,10 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Topbar from '../../components/Topbar';
 import api from '../../api/axios';
+import { Pill } from '../../components/Pill';
 
-function Pill({ status }) {
-  const map = {
-    ACTIVE: 'bg-green-50 text-green-700',
-    INACTIVE: 'bg-red-50 text-red-700',
-  };
-  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
-  );
-}
+// Inactive currencies are shown in red, unlike inactive users
+const CURRENCY_STATUS_COLORS = { INACTIVE: 'bg-red-50 text-red-700' };
 
 // The actions the user can take — dropdown selector pattern
 const ACTIONS = [
@@ -176,7 +169,7 @@ export default function SettingsCurrency() {
                         <td className="px-3 py-3 text-gray-700">{c.name}</td>
                         <td className="px-3 py-3 text-gray-500">{c.symbol}</td>
                         <td className="px-3 py-3">
-                          <Pill status={c.status} />
+                          <Pill status={c.status} colors={CURRENCY_STATUS_COLORS} />
                         </td>
                       </tr>
                     ))}
@@ -250,7 +243,7 @@ export default function SettingsCurrency() {
                         <td className="px-3 py-3 text-gray-700">{c.name}</td>
                         <td className="px-3 py-3 text-gray-500">{c.symbol}</td>
                         <td className="px-3 py-3">
-                          <Pill status={c.status} />
+                          <Pill status={c.status} colors={CURRENCY_STATUS_COLORS} />
                         </td>
                       </tr>
                     ))}
