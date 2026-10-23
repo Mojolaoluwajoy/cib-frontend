@@ -145,13 +145,6 @@ export default function Transactions() {
   const [allTotalPages, setAllTotalPages] = useState(1);
   const [allTotal, setAllTotal] = useState(0);
 
-  // ── Webhook simulator state ──
-  const [webhookRef, setWebhookRef] = useState('');
-  const [webhookEvent, setWebhookEvent] = useState('transfer.success');
-  const [webhookLoading, setWebhookLoading] = useState(false);
-  const [webhookSuccess, setWebhookSuccess] = useState('');
-  const [webhookError, setWebhookError] = useState('');
-
   useEffect(() => {
     if (tabFromUrl === 'pending') loadPending();
     if (tabFromUrl === 'all') loadAll();
@@ -325,33 +318,6 @@ export default function Transactions() {
       setApprovalError(err.response?.data?.message || 'Could not process transaction.');
     } finally {
       setApprovalLoading(false);
-    }
-  }
-
-  async function simulateWebhook(e) {
-    e.preventDefault();
-    setWebhookError('');
-    setWebhookSuccess('');
-    if (!webhookRef) {
-      setWebhookError('Please enter a transaction reference.');
-      return;
-    }
-    setWebhookLoading(true);
-    try {
-      await api.post('/webhook/paystack', {
-        event: webhookEvent,
-        data: {
-          reference: webhookRef,
-          status: webhookEvent === 'transfer.success' ? 'success' : 'failed',
-        },
-      });
-      setWebhookSuccess(`Webhook simulated! Event "${webhookEvent}" sent for ref: ${webhookRef}`);
-      setWebhookRef('');
-      loadPending();
-    } catch (err) {
-      setWebhookError(err.response?.data?.message || 'Webhook simulation failed.');
-    } finally {
-      setWebhookLoading(false);
     }
   }
 
@@ -659,68 +625,6 @@ export default function Transactions() {
                 </div>
               )}
             </div>
-
-            {/* Webhook simulator — only rendered by the Vite dev server, never in production builds */}
-            {import.meta.env.DEV && (
-              <div className="border-2 border-dashed border-amber-300 bg-amber-50 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-1">
-                  <i className="ti ti-flask text-amber-600 text-lg" />
-                  <h2 className="text-sm font-semibold text-amber-800">Testing Tools</h2>
-                  <span className="text-xs font-semibold bg-amber-500 text-white px-2.5 py-0.5 rounded-full">
-                    DEV ONLY
-                  </span>
-                </div>
-                <p className="text-xs text-amber-700 mb-5">
-                  Simulate a Paystack webhook for external payout testing.
-                  <strong className="ml-1">Remove before going live.</strong>
-                </p>
-                <Alert success={webhookSuccess} error={webhookError} />
-                <form onSubmit={simulateWebhook} className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                      Transaction reference
-                    </label>
-                    <input
-                      value={webhookRef}
-                      onChange={(e) => setWebhookRef(e.target.value)}
-                      placeholder="Paste reference from approved payout"
-                      className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white placeholder:text-gray-300"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                      Simulate event
-                    </label>
-                    <select
-                      value={webhookEvent}
-                      onChange={(e) => setWebhookEvent(e.target.value)}
-                      className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white"
-                    >
-                      <option value="transfer.success">transfer.success</option>
-                      <option value="transfer.failed">transfer.failed</option>
-                      <option value="transfer.reversed">transfer.reversed</option>
-                    </select>
-                  </div>
-                  <div className="col-span-2 flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={webhookLoading}
-                      className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 disabled:opacity-60 transition-all"
-                    >
-                      {webhookLoading ? (
-                        <>
-                          <i className="ti ti-loader animate-spin" /> Simulating...
-                        </>
-                      ) : (
-                        <>
-                          <i className="ti ti-player-play" /> Simulate webhook
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            )}
           </div>
         )}
 

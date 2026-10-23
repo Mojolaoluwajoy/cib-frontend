@@ -72,10 +72,12 @@ On login the JWT and user details are stored in `localStorage` under `cib_user`.
 sends the token as a `Bearer` header. Any `401` response, or 30 minutes without activity, signs
 the user out.
 
-## Development-only tools
+## Testing Paystack webhooks
 
-The Transactions page shows a **Testing Tools** panel for simulating Paystack webhooks. It only
-appears when running `npm run dev` and is left out of production builds.
+Payouts stay pending until Paystack confirms them through a webhook to the backend's
+`/webhook/paystack` endpoint. The backend checks the `x-paystack-signature` header on every
+webhook, so they cannot be faked from the browser. To test end to end, use Paystack test mode and
+point the test webhook URL at your local backend through a tunnel such as ngrok.
 
 ## Branches and CI
 
