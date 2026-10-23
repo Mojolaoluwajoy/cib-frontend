@@ -3,6 +3,9 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
+import { formatMoney } from '../utils/format';
 
 const ACCOUNT_TYPES = ['CURRENT', 'SAVINGS', 'PAYROLL', 'REVENUE', 'EXPENSE', 'ASSET'];
 const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
@@ -22,15 +25,6 @@ function typeColor(type) {
       text: 'text-gray-700',
       icon: 'ti-building-bank',
     }
-  );
-}
-
-function formatMoney(amount, currency = 'NGN') {
-  if (amount === null || amount === undefined) return '—';
-  const symbols = { NGN: '₦', USD: '$', GBP: '£', EUR: '€' };
-  return (
-    (symbols[currency] || currency) +
-    Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })
   );
 }
 
@@ -62,6 +56,7 @@ export default function Accounts() {
   const [accounts, setAccounts] = useState([]);
   const [accsLoading, setAccsLoading] = useState(false);
   const [accsLoaded, setAccsLoaded] = useState(false);
+  const [accsError, setAccsError] = useState('');
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -106,12 +101,13 @@ export default function Accounts() {
 
   async function loadAccounts() {
     setAccsLoading(true);
+    setAccsError('');
     try {
       const res = await api.get('/accounts/all');
       setAccounts(res.data.data || []);
       setAccsLoaded(true);
-    } catch {
-      setAccounts([]);
+    } catch (err) {
+      setAccsError(loadErrorMessage(err, 'accounts'));
     } finally {
       setAccsLoading(false);
     }
@@ -377,7 +373,9 @@ export default function Accounts() {
                 </button>
               </div>
 
-              {!accsLoaded ? (
+              {accsError ? (
+                <LoadError message={accsError} onRetry={loadAccounts} />
+              ) : !accsLoaded ? (
                 <div className="text-center py-12 text-gray-400 text-sm">
                   <i className="ti ti-building-bank text-3xl block mb-2 text-gray-300" />
                   Click "Load accounts" to view all accounts

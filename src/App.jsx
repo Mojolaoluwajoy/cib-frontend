@@ -19,7 +19,7 @@ import SettingsMenu from './pages/settings/SettingsMenu';
 import SettingsPassword from './pages/settings/SettingsPassword';
 import SettingsCurrency from './pages/settings/SettingsCurrency';
 
-function ProtectedRoute({ children, allowedRoles }) {
+export function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
   if (!user?.token) return <Navigate to="/login" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role))
@@ -48,11 +48,11 @@ export default function App() {
             }
           />
 
-          {/* ── Org onboarding — SUPER_ADMIN approvals + public registration ── */}
+          {/* ── Org approvals — SUPER_ADMIN only (public registration lives at /register) ── */}
           <Route
             path="/org-onboarding"
             element={
-              <ProtectedRoute allowedRoles={['SUPER_ADMIN', 'ADMIN']}>
+              <ProtectedRoute allowedRoles={['SUPER_ADMIN']}>
                 <OrgOnboarding />
               </ProtectedRoute>
             }

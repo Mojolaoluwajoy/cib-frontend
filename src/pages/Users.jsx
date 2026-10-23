@@ -2,20 +2,9 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    ACTIVE: 'bg-green-50 text-green-700',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {status}
-    </span>
-  );
-}
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
+import { Pill } from '../components/Pill';
 
 const EDITABLE_FIELDS = [
   { key: 'firstName', label: 'First name', type: 'text', placeholder: 'Enter new first name' },
@@ -27,6 +16,7 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [editUser, setEditUser] = useState(null);
   const [selected, setSelected] = useState([]);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '' });
@@ -36,6 +26,7 @@ export default function Users() {
 
   async function loadUsers() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/users/viewAll');
       const allUsers = res.data.data || [];
@@ -45,8 +36,8 @@ export default function Users() {
       const filtered = allUsers.filter((u) => u.role !== 'SUPER_ADMIN');
       setUsers(filtered);
       setLoaded(true);
-    } catch {
-      setUsers([]);
+    } catch (err) {
+      setLoadError(loadErrorMessage(err, 'users'));
     } finally {
       setLoading(false);
     }
@@ -124,7 +115,9 @@ export default function Users() {
             </button>
           </div>
 
-          {!loaded ? (
+          {loadError ? (
+            <LoadError message={loadError} onRetry={loadUsers} />
+          ) : !loaded ? (
             <div className="text-center py-12">
               <i className="ti ti-users text-3xl text-gray-200 block mb-2" />
               <p className="text-sm text-gray-400">Click "Load users" to view all users</p>

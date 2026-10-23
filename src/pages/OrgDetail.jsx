@@ -3,47 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
-
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    ACTIVE: 'bg-green-50 text-green-700',
-    COMPLETED: 'bg-green-50 text-green-700',
-    SUCCESS: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    INACTIVE: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    FAILED: 'bg-red-50 text-red-700',
-    DISABLED: 'bg-gray-100 text-gray-500',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {status}
-    </span>
-  );
-}
-
-function TypePill({ type }) {
-  const map = {
-    INTERNAL_TRANSFER: 'bg-blue-50 text-blue-700',
-    EXTERNAL_PAYOUT: 'bg-purple-50 text-purple-700',
-    EXTERNAL_FUNDING: 'bg-green-50 text-green-700',
-  };
-  return (
-    <span
-      className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${map[(type || '').toUpperCase()] || 'bg-gray-100 text-gray-600'}`}
-    >
-      {(type || '').replace(/_/g, ' ')}
-    </span>
-  );
-}
-
-function formatMoney(amount) {
-  if (!amount && amount !== 0) return '—';
-  return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-}
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
+import { Pill, TypePill } from '../components/Pill';
+import { formatMoney } from '../utils/format';
 
 const TABS = [
   { key: 'overview', label: 'Overview', icon: 'ti-layout-dashboard' },
@@ -66,6 +29,8 @@ export default function OrgDetail() {
   const [transactions, setTxns] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Why the organization or one of its sections failed to load, keyed by section
+  const [loadErrors, setLoadErrors] = useState({});
   const [activeTab, setActiveTab] = useState('overview');
 
   // Create account form
@@ -82,6 +47,7 @@ export default function OrgDetail() {
 
   async function loadAll() {
     setLoading(true);
+    setLoadErrors({});
     try {
       // findBy takes raw Long — send number directly
       const orgRes = await api.post('/organizations/findBy', orgId);
@@ -93,10 +59,13 @@ export default function OrgDetail() {
         api.get('/users/viewAll'),
       ]);
 
+      const errors = {};
       if (accRes.status === 'fulfilled') setAccounts(accRes.value.data.data || []);
+      else errors.accounts = loadErrorMessage(accRes.reason, 'accounts');
 
       if (txnRes.status === 'fulfilled')
         setTxns(txnRes.value.data.data?.content || txnRes.value.data.data || []);
+      else errors.transactions = loadErrorMessage(txnRes.reason, 'transactions');
 
       if (usrRes.status === 'fulfilled') {
         const allUsers = usrRes.value.data.data || [];
@@ -108,10 +77,11 @@ export default function OrgDetail() {
           return userOrgId !== '' && userOrgId === String(id);
         });
         setUsers(orgUsers);
-      }
+      } else errors.users = loadErrorMessage(usrRes.reason, 'users');
+      setLoadErrors(errors);
     } catch (err) {
-      console.error('Failed to load org detail:', err);
       setOrg(null);
+      setLoadErrors({ org: loadErrorMessage(err, 'this organization') });
     } finally {
       setLoading(false);
     }
@@ -187,11 +157,10 @@ export default function OrgDetail() {
   if (!org) {
     return (
       <Layout>
-        <Topbar title="Organization" subtitle="Not found" />
+        <Topbar title="Organization" subtitle="Could not load" />
         <main className="p-7">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-5">
-            <div className="text-sm font-semibold text-red-700">Organization not found</div>
-            <div className="text-xs text-red-500 mt-1">ID {id} did not match any organization.</div>
+          <div className="bg-white border border-gray-200 rounded-xl">
+            <LoadError message={loadErrors.org} onRetry={loadAll} />
           </div>
           <Link
             to="/organizations"
@@ -266,19 +235,19 @@ export default function OrgDetail() {
               {[
                 {
                   label: 'Total accounts',
-                  value: accounts.length,
+                  value: loadErrors.accounts ? '—' : accounts.length,
                   icon: 'ti-building-bank',
                   color: 'bg-blue-50 text-blue-600',
                 },
                 {
                   label: 'Total transactions',
-                  value: transactions.length,
+                  value: loadErrors.transactions ? '—' : transactions.length,
                   icon: 'ti-arrows-exchange',
                   color: 'bg-green-50 text-green-600',
                 },
                 {
                   label: 'Total users',
-                  value: users.length,
+                  value: loadErrors.users ? '—' : users.length,
                   icon: 'ti-users',
                   color: 'bg-purple-50 text-purple-600',
                 },
@@ -334,7 +303,9 @@ export default function OrgDetail() {
         {activeTab === 'accounts' && (
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Accounts for {org.name}</h2>
-            {accounts.length === 0 ? (
+            {loadErrors.accounts ? (
+              <LoadError message={loadErrors.accounts} onRetry={loadAll} />
+            ) : accounts.length === 0 ? (
               <div className="text-center py-12">
                 <i className="ti ti-building-bank text-3xl text-gray-200 block mb-2" />
                 <p className="text-sm text-gray-400">No accounts yet</p>
@@ -389,7 +360,9 @@ export default function OrgDetail() {
             <h2 className="text-sm font-semibold text-gray-900 mb-4">
               Transactions for {org.name}
             </h2>
-            {transactions.length === 0 ? (
+            {loadErrors.transactions ? (
+              <LoadError message={loadErrors.transactions} onRetry={loadAll} />
+            ) : transactions.length === 0 ? (
               <div className="text-center py-12">
                 <i className="ti ti-arrows-exchange text-3xl text-gray-200 block mb-2" />
                 <p className="text-sm text-gray-400">No transactions yet</p>
@@ -438,7 +411,9 @@ export default function OrgDetail() {
         {activeTab === 'users' && (
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <h2 className="text-sm font-semibold text-gray-900 mb-4">Users in {org.name}</h2>
-            {users.length === 0 ? (
+            {loadErrors.users ? (
+              <LoadError message={loadErrors.users} onRetry={loadAll} />
+            ) : users.length === 0 ? (
               <div className="text-center py-12">
                 <i className="ti ti-users text-3xl text-gray-200 block mb-2" />
                 <p className="text-sm text-gray-400">No users found for this organization</p>

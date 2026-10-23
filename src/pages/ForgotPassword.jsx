@@ -1,22 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
-
-function Alert({ success, error }) {
-  if (success)
-    return (
-      <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-        <i className="ti ti-circle-check" /> {success}
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex items-center gap-2 bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-        <i className="ti ti-alert-circle" /> {error}
-      </div>
-    );
-  return null;
-}
+import Alert from '../components/Alert';
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1); // 1 = enter email, 2 = enter token + new password
@@ -44,7 +29,11 @@ export default function ForgotPassword() {
     }
     setStep1Loading(true);
     try {
-      await api.post('/auth/password/token', email);
+      // The backend reads this body as a raw string. Sent as JSON, axios would wrap it in
+      // quotes ("jane@corp.com") and the email lookup would fail, so send plain text.
+      await api.post('/auth/password/token', email, {
+        headers: { 'Content-Type': 'text/plain' },
+      });
       setStep1Success(`Token sent to ${email}! Check your inbox.`);
       setTimeout(() => setStep(2), 1500);
     } catch (err) {
