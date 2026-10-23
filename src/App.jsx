@@ -19,7 +19,7 @@ import SettingsMenu from './pages/settings/SettingsMenu';
 import SettingsPassword from './pages/settings/SettingsPassword';
 import SettingsCurrency from './pages/settings/SettingsCurrency';
 
-function ProtectedRoute({ children, allowedRoles }) {
+export function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
   if (!user?.token) return <Navigate to="/login" replace />;
   if (allowedRoles && !allowedRoles.includes(user.role))

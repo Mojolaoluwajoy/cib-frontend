@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Pill, TypePill } from '../components/Pill';
 import Alert from '../components/Alert';
 import { formatMoney } from '../utils/format';
+import { idempotencyKeyFor } from '../utils/idempotency';
 import api from '../api/axios';
 
 // Number of rows per page in All Transactions
@@ -47,16 +48,6 @@ function Field({ label, value, onChange, type = 'text', placeholder, full }) {
       />
     </div>
   );
-}
-
-// Returns the idempotency key for a request. Retrying the exact same request reuses its key so
-// the backend can drop the duplicate; any change to the request gets a fresh key.
-function idempotencyKeyFor(keyRef, payload) {
-  const body = JSON.stringify(payload);
-  if (keyRef.current?.body !== body) {
-    keyRef.current = { body, key: crypto.randomUUID() };
-  }
-  return keyRef.current.key;
 }
 
 export default function Transactions() {
