@@ -5,8 +5,10 @@ import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import { Pill, TypePill } from '../components/Pill';
 import Alert from '../components/Alert';
+import LoadError from '../components/LoadError';
 import { formatMoney } from '../utils/format';
 import { idempotencyKeyFor } from '../utils/idempotency';
+import { loadErrorMessage } from '../utils/loadError';
 import api from '../api/axios';
 
 // Number of rows per page in All Transactions
@@ -121,6 +123,7 @@ export default function Transactions() {
   // ── Pending transactions state ──
   const [pending, setPending] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [pendingError, setPendingError] = useState('');
   const [pendingSuccess, setPendingSuccess] = useState('');
   const [approvalModal, setApprovalModal] = useState(null);
   // SUCCESS = approve, REJECTED = reject
@@ -132,6 +135,7 @@ export default function Transactions() {
   const [allTxns, setAllTxns] = useState([]);
   const [allLoading, setAllLoading] = useState(false);
   const [allLoaded, setAllLoaded] = useState(false);
+  const [allError, setAllError] = useState('');
   const [allPage, setAllPage] = useState(0);
   const [allTotalPages, setAllTotalPages] = useState(1);
   const [allTotal, setAllTotal] = useState(0);
@@ -259,11 +263,13 @@ export default function Transactions() {
 
   async function loadPending() {
     setPendingLoading(true);
+    setPendingError('');
     try {
       const res = await api.get('/transactions/pending');
       setPending(res.data.data || []);
-    } catch {
+    } catch (err) {
       setPending([]);
+      setPendingError(loadErrorMessage(err, 'pending transactions'));
     } finally {
       setPendingLoading(false);
     }
@@ -271,6 +277,7 @@ export default function Transactions() {
 
   async function loadAll(page = allPage) {
     setAllLoading(true);
+    setAllError('');
     try {
       const res = await api.get('/transactions/transactions', {
         params: { page, size: PAGE_SIZE },
@@ -283,8 +290,8 @@ export default function Transactions() {
       setAllTotalPages(data?.totalPages ?? data?.page?.totalPages ?? 1);
       setAllTotal(data?.totalElements ?? data?.page?.totalElements ?? content.length);
       setAllLoaded(true);
-    } catch {
-      setAllTxns([]);
+    } catch (err) {
+      setAllError(loadErrorMessage(err, 'transactions'));
     } finally {
       setAllLoading(false);
     }
@@ -536,6 +543,8 @@ export default function Transactions() {
 
               {pendingLoading ? (
                 <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+              ) : pendingError ? (
+                <LoadError message={pendingError} onRetry={loadPending} />
               ) : pending.length === 0 ? (
                 <div className="text-center py-12">
                   <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
@@ -637,7 +646,9 @@ export default function Transactions() {
               </button>
             </div>
 
-            {!allLoaded ? (
+            {allError ? (
+              <LoadError message={allError} onRetry={() => loadAll()} />
+            ) : !allLoaded ? (
               <div className="text-center py-12">
                 <i className="ti ti-list text-3xl text-gray-200 block mb-2" />
                 <p className="text-sm text-gray-400">Click "Load transactions" to view history</p>

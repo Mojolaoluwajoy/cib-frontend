@@ -3,6 +3,8 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
 import { Pill } from '../components/Pill';
 
 const TABS = ['Send Invite', 'Complete Registration', 'All Users'];
@@ -37,6 +39,7 @@ export default function UserOnboarding() {
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersLoaded, setUsersLoaded] = useState(false);
+  const [usersError, setUsersError] = useState('');
 
   async function handleInvite(e) {
     e.preventDefault();
@@ -82,13 +85,14 @@ export default function UserOnboarding() {
 
   async function loadUsers() {
     setUsersLoading(true);
+    setUsersError('');
     try {
       const res = await api.get('/users/viewAll');
       const filtered = (res.data.data || []).filter((u) => u.role !== 'SUPER_ADMIN');
       setUsers(filtered);
       setUsersLoaded(true);
-    } catch {
-      setUsers([]);
+    } catch (err) {
+      setUsersError(loadErrorMessage(err, 'users'));
     } finally {
       setUsersLoading(false);
     }
@@ -323,7 +327,9 @@ export default function UserOnboarding() {
               </button>
             </div>
 
-            {!usersLoaded ? (
+            {usersError ? (
+              <LoadError message={usersError} onRetry={loadUsers} />
+            ) : !usersLoaded ? (
               <div className="text-center py-12 text-gray-400 text-sm">
                 <i className="ti ti-users text-3xl block mb-2 text-gray-300" />
                 Click "Load users" to view all registered users

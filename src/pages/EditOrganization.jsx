@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
 
 const EDITABLE_FIELDS = [
   { key: 'name', label: 'Organization name', type: 'text', placeholder: 'Enter new name' },
@@ -45,15 +47,18 @@ export default function EditOrganization() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   async function loadOrg() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.post('/organizations/findBy', Number(id));
       setOrg(res.data.data);
       setStatusChange(res.data.data?.organizationStatus || 'APPROVED');
-    } catch {
+    } catch (err) {
       setOrg(null);
+      setLoadError(loadErrorMessage(err, 'this organization'));
     } finally {
       setLoading(false);
     }
@@ -126,9 +131,11 @@ export default function EditOrganization() {
   if (!org) {
     return (
       <Layout>
-        <Topbar title="Edit Organization" subtitle="Not found" />
+        <Topbar title="Edit Organization" subtitle="Could not load" />
         <main className="p-7">
-          <p className="text-sm text-red-500">Organization not found.</p>
+          <div className="bg-white border border-gray-200 rounded-xl">
+            <LoadError message={loadError} onRetry={loadOrg} />
+          </div>
           <Link
             to="/org-onboarding"
             className="text-blue-600 text-sm hover:underline mt-2 inline-block"

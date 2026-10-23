@@ -4,6 +4,8 @@ import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
 import { Pill } from '../components/Pill';
 import { formatMoney } from '../utils/format';
 
@@ -35,24 +37,30 @@ function SuperAdminDashboard({ user }) {
   // orgs holds the actual org list for the table
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Why stats or orgs failed to load, keyed by section
+  const [errors, setErrors] = useState({});
 
   // Calls /dashboard/stats — returns org counts for SUPER_ADMIN
   async function loadStats() {
+    setErrors((prev) => ({ ...prev, stats: '' }));
     try {
       const res = await api.get('/dashboard/stats');
       setStats(res.data.data);
-    } catch {
+    } catch (err) {
       setStats(null);
+      setErrors((prev) => ({ ...prev, stats: loadErrorMessage(err, 'dashboard figures') }));
     }
   }
 
   // Calls /organizations/viewAll — returns org list for the table
   async function loadOrgs() {
+    setErrors((prev) => ({ ...prev, orgs: '' }));
     try {
       const res = await api.get('/organizations/viewAll');
       setOrgs(res.data.data || []);
-    } catch {
+    } catch (err) {
       setOrgs([]);
+      setErrors((prev) => ({ ...prev, orgs: loadErrorMessage(err, 'organizations') }));
     } finally {
       setLoading(false);
     }
@@ -60,8 +68,6 @@ function SuperAdminDashboard({ user }) {
 
   useEffect(() => {
     if (!user?.token) return;
-    // Loaders only set state after awaiting the API, so this is not a synchronous update
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats();
     loadOrgs();
   }, [user?.token]);
@@ -87,6 +93,12 @@ function SuperAdminDashboard({ user }) {
             .toUpperCase()}
         </div>
       </div>
+
+      {errors.stats && (
+        <div className="bg-white border border-gray-200 rounded-xl">
+          <LoadError message={errors.stats} onRetry={loadStats} />
+        </div>
+      )}
 
       {/* Metric cards — all numbers come from stats */}
       <div className="grid grid-cols-4 gap-4">
@@ -131,6 +143,8 @@ function SuperAdminDashboard({ user }) {
 
         {loading ? (
           <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+        ) : errors.orgs ? (
+          <LoadError message={errors.orgs} onRetry={loadOrgs} />
         ) : orgs.length === 0 ? (
           <div className="text-center py-12">
             <i className="ti ti-building text-3xl text-gray-200 block mb-2" />
@@ -221,62 +235,87 @@ function OperationalDashboard({ user }) {
   const [pending, setPending] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  // Why a section failed to load, keyed by section
+  const [errors, setErrors] = useState({});
+
+  const isApprover = user?.role === 'APPROVER';
+  const canSeePending = user?.role !== 'MAKER';
 
   async function loadOrgDetails() {
+    setErrors((prev) => ({ ...prev, org: '' }));
     try {
       const res = await api.get('/organizations/viewAll');
       const orgs = res.data.data || [];
       if (orgs.length > 0) {
         setOrgDetails(orgs[0]);
       }
-    } catch {
+    } catch (err) {
       setOrgDetails(null);
+      setErrors((prev) => ({ ...prev, org: loadErrorMessage(err, 'your organization details') }));
     }
   }
 
   async function loadStats() {
+    setErrors((prev) => ({ ...prev, stats: '' }));
     try {
       const res = await api.get('/dashboard/stats');
       setStats(res.data.data);
-    } catch {
+    } catch (err) {
       setStats(null);
+      setErrors((prev) => ({ ...prev, stats: loadErrorMessage(err, 'dashboard figures') }));
     } finally {
       setLoading(false);
     }
   }
 
   async function loadRecentTransactions() {
+    setErrors((prev) => ({ ...prev, transactions: '' }));
     try {
       const res = await api.get('/transactions/transactions?page=0&size=4');
       setTransactions(res.data.data?.content || res.data.data || []);
-    } catch {
+    } catch (err) {
       setTransactions([]);
+      setErrors((prev) => ({
+        ...prev,
+        transactions: loadErrorMessage(err, 'recent transactions'),
+      }));
     }
   }
 
   // Separate call for pending transactions list
   async function loadPending() {
+    setErrors((prev) => ({ ...prev, pending: '' }));
     try {
       const res = await api.get('/transactions/pending');
       setPending(res.data.data || []);
-    } catch {
+    } catch (err) {
       setPending([]);
+      setErrors((prev) => ({ ...prev, pending: loadErrorMessage(err, 'pending transactions') }));
     }
   }
 
   useEffect(() => {
-    // Loaders only set state after awaiting the API, so this is not a synchronous update
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStats();
     loadRecentTransactions();
-    loadPending();
+    // The backend only lists pending transactions for approvers and admins
+    if (canSeePending) loadPending();
     loadOrgDetails();
-  }, []);
-
-  const isApprover = user?.role === 'APPROVER';
+  }, [canSeePending]);
 
   return (
     <main className="p-7 flex flex-col gap-6">
+      {[
+        ['org', loadOrgDetails],
+        ['stats', loadStats],
+      ].map(
+        ([key, retry]) =>
+          errors[key] && (
+            <div key={key} className="bg-white border border-gray-200 rounded-xl">
+              <LoadError message={errors[key]} onRetry={retry} />
+            </div>
+          ),
+      )}
+
       {/* ── Dedicated virtual account card ── */}
       {orgDetails?.dvaAccountNumber && (
         <div className="bg-slate-900 rounded-xl p-5">
@@ -362,7 +401,7 @@ function OperationalDashboard({ user }) {
       </div>
 
       {/* Row: Recent transactions + Pending approvals */}
-      <div className="grid grid-cols-2 gap-5">
+      <div className={`grid gap-5 ${canSeePending ? 'grid-cols-2' : 'grid-cols-1'}`}>
         {/* Recent transactions list */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -374,6 +413,8 @@ function OperationalDashboard({ user }) {
 
           {loading ? (
             <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+          ) : errors.transactions ? (
+            <LoadError message={errors.transactions} onRetry={loadRecentTransactions} />
           ) : transactions.length === 0 ? (
             <div className="text-center py-10">
               <i className="ti ti-arrows-exchange text-3xl text-gray-200 block mb-2" />
@@ -421,47 +462,54 @@ function OperationalDashboard({ user }) {
         </div>
 
         {/* Pending approvals list */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
-            <Link to="/transactions?tab=pending" className="text-xs text-blue-600 hover:underline">
-              View all →
-            </Link>
-          </div>
+        {canSeePending && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-gray-900">Pending approvals</h2>
+              <Link
+                to="/transactions?tab=pending"
+                className="text-xs text-blue-600 hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
 
-          {loading ? (
-            <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
-          ) : pending.length === 0 ? (
-            <div className="text-center py-10">
-              <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
-              <p className="text-sm text-gray-400">No pending transactions</p>
-            </div>
-          ) : (
-            <div className="flex flex-col divide-y divide-gray-100">
-              {pending.slice(0, 4).map((t, i) => (
-                <div key={i} className="flex items-center gap-3 py-3">
-                  <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
-                    <i className="ti ti-clock text-amber-600 text-base" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">
-                      {t.transactionReference || '—'}
+            {loading ? (
+              <p className="text-sm text-gray-400 text-center py-8">Loading...</p>
+            ) : errors.pending ? (
+              <LoadError message={errors.pending} onRetry={loadPending} />
+            ) : pending.length === 0 ? (
+              <div className="text-center py-10">
+                <i className="ti ti-circle-check text-3xl text-gray-200 block mb-2" />
+                <p className="text-sm text-gray-400">No pending transactions</p>
+              </div>
+            ) : (
+              <div className="flex flex-col divide-y divide-gray-100">
+                {pending.slice(0, 4).map((t, i) => (
+                  <div key={i} className="flex items-center gap-3 py-3">
+                    <div className="w-9 h-9 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0">
+                      <i className="ti ti-clock text-amber-600 text-base" />
                     </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {(t.type || '').replace(/_/g, ' ')}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">
+                        {t.transactionReference || '—'}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {(t.type || '').replace(/_/g, ' ')}
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-semibold text-gray-900">
+                        {formatMoney(t.amount)}
+                      </div>
+                      <Pill status={t.status} />
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {formatMoney(t.amount)}
-                    </div>
-                    <Pill status={t.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Quick actions */}
