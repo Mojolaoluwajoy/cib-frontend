@@ -74,6 +74,11 @@ On login the JWT and user details are stored in `localStorage` under `cib_user`.
 sends the token as a `Bearer` header. Any `401` response, or 30 minutes without activity, signs
 the user out.
 
+The session is shared by all open tabs. The time of the last activity is kept in `localStorage`
+under `cib_last_active`, so working in one tab keeps every tab signed in. A session that has been
+idle for 30 minutes is dropped when the app next opens, even if the browser was closed in between.
+Signing out in one tab signs out all of them.
+
 ## Testing Paystack webhooks
 
 Payouts stay pending until Paystack confirms them through a webhook to the backend's
