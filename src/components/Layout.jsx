@@ -3,9 +3,13 @@ import Sidebar from './Sidebar';
 import { SidebarContext } from './sidebarContext';
 import { useAuth } from '../context/AuthContext';
 
+const SUPPORT_MESSAGE = encodeURIComponent('Hello, I need support with my CIB Platform account.');
+
 export default function Layout({ children }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  // WhatsApp number for the support button, in international format without "+" (e.g. 2348012345678)
+  const supportWhatsapp = import.meta.env.VITE_SUPPORT_WHATSAPP;
   // Only matters below the lg breakpoint, where the sidebar is hidden until opened
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -23,10 +27,10 @@ export default function Layout({ children }) {
         <div className="lg:ml-56 flex-1 min-w-0 flex flex-col min-h-screen">{children}</div>
       </SidebarContext.Provider>
 
-      {/* WhatsApp support button — ADMIN only */}
-      {isAdmin && (
+      {/* WhatsApp support button — ADMIN only, and only when a support number is configured */}
+      {isAdmin && supportWhatsapp && (
         <a
-          href="https://wa.me/2349137205789?text=Hello%2C%20I%20need%20support%20with%20my%20CIB%20Platform%20account."
+          href={`https://wa.me/${supportWhatsapp}?text=${SUPPORT_MESSAGE}`}
           target="_blank"
           rel="noopener noreferrer"
           className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-full shadow-lg transition-all hover:shadow-xl group"

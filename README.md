@@ -31,6 +31,11 @@ cp .env.example .env.local
 If `VITE_API_URL` is not set, the app uses `http://localhost:1990`. Vite bakes this value into
 the bundle at build time, so set it before running `npm run build` for a deployed environment.
 
+| Variable                | Purpose                                                                 |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `VITE_API_URL`          | Backend address                                                         |
+| `VITE_SUPPORT_WHATSAPP` | WhatsApp number for the ADMIN support button; the button hides if unset |
+
 ## Scripts
 
 | Command                | What it does                                 |
