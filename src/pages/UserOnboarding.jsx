@@ -8,7 +8,7 @@ import { loadErrorMessage } from '../utils/loadError';
 import { checkEmail, submitErrorMessage } from '../utils/validation';
 import { Pill } from '../components/Pill';
 
-const TABS = ['Send Invite', 'Complete Registration', 'All Users'];
+const TABS = ['Send Invite', 'All Users'];
 
 export default function UserOnboarding() {
   const { user } = useAuth();
@@ -20,21 +20,6 @@ export default function UserOnboarding() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [inviteError, setInviteError] = useState('');
-
-  // ── Registration form ──
-  const [reg, setReg] = useState({
-    token: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    nin: '',
-    adminKey: '',
-  });
-  const [regLoading, setRegLoading] = useState(false);
-  const [regSuccess, setRegSuccess] = useState('');
-  const [regError, setRegError] = useState('');
-  const [regDone, setRegDone] = useState(false);
 
   // ── Users table ──
   const [users, setUsers] = useState([]);
@@ -71,26 +56,6 @@ export default function UserOnboarding() {
     }
   }
 
-  async function handleRegister(e) {
-    e.preventDefault();
-    setRegError('');
-    setRegSuccess('');
-    if (Object.values(reg).some((v) => !v)) {
-      setRegError('Please fill in all fields.');
-      return;
-    }
-    setRegLoading(true);
-    try {
-      await api.post('/users/create', reg);
-      setRegSuccess('Account created successfully! You can now log in.');
-      setRegDone(true);
-    } catch (err) {
-      setRegError(err.response?.data?.message || 'Registration failed.');
-    } finally {
-      setRegLoading(false);
-    }
-  }
-
   async function loadUsers() {
     setUsersLoading(true);
     setUsersError('');
@@ -108,7 +73,7 @@ export default function UserOnboarding() {
 
   return (
     <Layout>
-      <Topbar title="User Onboarding" subtitle="Invite users and complete their registration" />
+      <Topbar title="User Onboarding" subtitle="Invite users and view your team" />
 
       <main className="p-4 sm:p-7 flex flex-col gap-6">
         {/* Tabs */}
@@ -118,7 +83,7 @@ export default function UserOnboarding() {
               key={tab}
               onClick={() => {
                 setActiveTab(i);
-                if (i === 2) loadUsers();
+                if (i === 1) loadUsers();
               }}
               className={`px-5 py-2 rounded-lg text-sm font-medium transition-all
                 ${activeTab === i ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'}`}
@@ -204,121 +169,8 @@ export default function UserOnboarding() {
           </div>
         )}
 
-        {/* ── Tab 2: Complete Registration ── */}
+        {/* ── Tab 2: All Users ── */}
         {activeTab === 1 && (
-          <div className="bg-white border border-gray-200 rounded-xl p-6 max-w-2xl">
-            <h2 className="text-sm font-semibold text-gray-900 mb-1">Complete your registration</h2>
-            <p className="text-xs text-gray-500 mb-5">
-              Enter the token you received by email along with your personal details.
-            </p>
-
-            {/* Steps */}
-            <div className="flex items-center gap-2 mb-6">
-              {[
-                { label: 'Invite sent', done: true },
-                { label: 'Fill details', done: false, active: !regDone },
-                { label: 'Account created', done: regDone },
-              ].map(({ label, done, active }, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  {i > 0 && <div className={`h-px w-8 ${done ? 'bg-green-400' : 'bg-gray-200'}`} />}
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold
-                      ${done ? 'bg-green-500 text-white' : active ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}
-                    >
-                      {done ? <i className="ti ti-check text-xs" /> : i + 1}
-                    </div>
-                    <span
-                      className={`text-xs font-medium ${done ? 'text-green-600' : active ? 'text-blue-600' : 'text-gray-400'}`}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {regSuccess && (
-              <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-                <i className="ti ti-circle-check" /> {regSuccess}
-              </div>
-            )}
-            {regError && (
-              <div className="flex items-center gap-2 bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-                <i className="ti ti-alert-circle" /> {regError}
-              </div>
-            )}
-
-            {!regDone && (
-              <form onSubmit={handleRegister} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[
-                  {
-                    label: 'Invitation token',
-                    key: 'token',
-                    type: 'text',
-                    placeholder: 'Paste token from your email',
-                    full: true,
-                  },
-                  { label: 'First name', key: 'firstName', type: 'text', placeholder: 'e.g. John' },
-                  { label: 'Last name', key: 'lastName', type: 'text', placeholder: 'e.g. Okeke' },
-                  {
-                    label: 'Email address',
-                    key: 'email',
-                    type: 'email',
-                    placeholder: 'e.g. john@dangote.com',
-                  },
-                  {
-                    label: 'Password',
-                    key: 'password',
-                    type: 'password',
-                    placeholder: 'Min. 8 characters',
-                  },
-                  { label: 'NIN', key: 'nin', type: 'text', placeholder: '11-digit NIN' },
-                  {
-                    label: 'Admin key',
-                    key: 'adminKey',
-                    type: 'text',
-                    placeholder: 'Provided by your organization',
-                    full: true,
-                  },
-                ].map(({ label, key, type, placeholder, full }) => (
-                  <div key={key} className={`flex flex-col gap-1.5 ${full ? 'sm:col-span-2' : ''}`}>
-                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      {label}
-                    </label>
-                    <input
-                      type={type}
-                      value={reg[key]}
-                      onChange={(e) => setReg({ ...reg, [key]: e.target.value })}
-                      placeholder={placeholder}
-                      className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
-                    />
-                  </div>
-                ))}
-                <div className="sm:col-span-2 flex justify-end mt-2">
-                  <button
-                    type="submit"
-                    disabled={regLoading}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
-                  >
-                    {regLoading ? (
-                      <>
-                        <i className="ti ti-loader animate-spin" /> Creating account...
-                      </>
-                    ) : (
-                      <>
-                        <i className="ti ti-user-check" /> Create account
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
-
-        {/* ── Tab 3: All Users ── */}
-        {activeTab === 2 && (
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
