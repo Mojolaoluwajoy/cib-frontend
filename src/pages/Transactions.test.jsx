@@ -91,21 +91,81 @@ describe('Transactions', () => {
     expect(retryCall[1].idempotencyKey).toBe(firstCall[1].idempotencyKey);
   });
 
-  it('rejects a payout to an account number that is not 10 digits', async () => {
-    const user = userEvent.setup();
-    renderAs('MAKER', '/transactions?tab=payout');
-    await user.type(screen.getByPlaceholderText('Internal account to debit'), '1111111111');
-    await user.type(screen.getByPlaceholderText('e.g. 250000'), '500');
-    await user.type(screen.getByPlaceholderText("Recipient's account number"), '12345');
-    await user.type(screen.getByPlaceholderText('e.g. 044'), '044');
-    await user.type(screen.getByPlaceholderText('e.g. Access Bank'), 'Access Bank');
-    await user.type(screen.getByPlaceholderText("Recipient's full name"), 'Jane Doe');
-    await user.click(screen.getByRole('button', { name: /Initiate payout/ }));
+  describe('payout recipient', () => {
+    const banks = [
+      { name: 'Access Bank', code: '044' },
+      { name: 'Zenith Bank', code: '057' },
+    ];
 
-    expect(
-      screen.getByText(/Recipient account number must be exactly 10 digits/),
-    ).toBeInTheDocument();
-    expect(api.post).not.toHaveBeenCalled();
+    function mockBankApi(resolve) {
+      api.get.mockImplementation((url, config) => {
+        if (url === '/external/transaction/banks')
+          return Promise.resolve({ data: { data: banks } });
+        if (url === '/external/transaction/banks/resolve') return resolve(config.params);
+        return Promise.resolve({ data: { data: { content: [] } } });
+      });
+    }
+
+    async function fillPayout(user, accountNumber) {
+      await user.type(screen.getByPlaceholderText('Internal account to debit'), '1111111111');
+      await user.type(screen.getByPlaceholderText('e.g. 250000'), '500');
+      await user.selectOptions(await screen.findByLabelText('Recipient bank'), '044');
+      await user.type(screen.getByLabelText('Recipient account number'), accountNumber);
+    }
+
+    it('rejects an account number that is not 10 digits', async () => {
+      mockBankApi(() => Promise.reject(new Error('should not be called')));
+      const user = userEvent.setup();
+      renderAs('MAKER', '/transactions?tab=payout');
+      await fillPayout(user, '12345');
+      await user.click(screen.getByRole('button', { name: /Initiate payout/ }));
+
+      expect(
+        screen.getByText(/Recipient account number must be exactly 10 digits/),
+      ).toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalled();
+    });
+
+    it('looks up the account name and sends it with the chosen bank', async () => {
+      mockBankApi(({ accountNumber, bankCode }) =>
+        Promise.resolve({ data: { data: { accountNumber, bankCode, accountName: 'JANE DOE' } } }),
+      );
+      api.post.mockResolvedValueOnce({ data: { data: {} } });
+      const user = userEvent.setup();
+      renderAs('MAKER', '/transactions?tab=payout');
+      await fillPayout(user, '0123456789');
+
+      expect(await screen.findByText('JANE DOE')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: /Initiate payout/ }));
+
+      await waitFor(() => expect(api.post).toHaveBeenCalled());
+      expect(api.post.mock.calls[0][1]).toMatchObject({
+        accountNumber: '0123456789',
+        bankCode: '044',
+        bankName: 'Access Bank',
+        accountName: 'JANE DOE',
+      });
+    });
+
+    it('will not send until the account name is confirmed', async () => {
+      mockBankApi(() =>
+        Promise.reject({
+          response: {
+            data: { message: 'No account with that number was found at the selected bank' },
+          },
+        }),
+      );
+      const user = userEvent.setup();
+      renderAs('MAKER', '/transactions?tab=payout');
+      await fillPayout(user, '0123456789');
+
+      expect(
+        await screen.findByText('No account with that number was found at the selected bank'),
+      ).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: /Initiate payout/ }));
+      expect(screen.getByText(/account name to be confirmed/)).toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalled();
+    });
   });
 
   it('names the field when the backend rejects a transfer', async () => {

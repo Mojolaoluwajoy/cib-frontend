@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Pill, TypePill } from '../components/Pill';
 import Alert from '../components/Alert';
 import LoadError from '../components/LoadError';
+import PayoutRecipient from '../components/PayoutRecipient';
 import { formatMoney } from '../utils/format';
 import { idempotencyKeyFor } from '../utils/idempotency';
 import { loadErrorMessage } from '../utils/loadError';
@@ -31,8 +32,8 @@ const PAYOUT_LABELS = {
   sourceAccount: 'Source account number',
   amount: 'Amount',
   accountNumber: 'Recipient account number',
-  bankCode: 'Bank code',
-  bankName: 'Bank name',
+  bankCode: 'Recipient bank',
+  bankName: 'Recipient bank',
   accountName: 'Account name',
 };
 const FUNDING_LABELS = {
@@ -215,14 +216,7 @@ export default function Transactions() {
     e.preventDefault();
     setPayError('');
     setPaySuccess('');
-    if (
-      !payForm.sourceAccount ||
-      !payForm.amount ||
-      !payForm.accountNumber ||
-      !payForm.bankCode ||
-      !payForm.bankName ||
-      !payForm.accountName
-    ) {
+    if (!payForm.sourceAccount || !payForm.amount || !payForm.accountNumber || !payForm.bankCode) {
       setPayError('Please fill in all fields.');
       return;
     }
@@ -232,6 +226,10 @@ export default function Transactions() {
     );
     if (payProblem) {
       setPayError(payProblem);
+      return;
+    }
+    if (!payForm.accountName) {
+      setPayError("Wait for the recipient's account name to be confirmed before sending.");
       return;
     }
     setPayLoading(true);
@@ -465,29 +463,9 @@ export default function Transactions() {
                 onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
                 placeholder="e.g. 250000"
               />
-              <Field
-                label="Recipient account number"
-                value={payForm.accountNumber}
-                onChange={(e) => setPayForm({ ...payForm, accountNumber: e.target.value })}
-                placeholder="Recipient's account number"
-              />
-              <Field
-                label="Bank code"
-                value={payForm.bankCode}
-                onChange={(e) => setPayForm({ ...payForm, bankCode: e.target.value })}
-                placeholder="e.g. 044"
-              />
-              <Field
-                label="Bank name"
-                value={payForm.bankName}
-                onChange={(e) => setPayForm({ ...payForm, bankName: e.target.value })}
-                placeholder="e.g. Access Bank"
-              />
-              <Field
-                label="Account name"
-                value={payForm.accountName}
-                onChange={(e) => setPayForm({ ...payForm, accountName: e.target.value })}
-                placeholder="Recipient's full name"
+              <PayoutRecipient
+                recipient={payForm}
+                onChange={(changes) => setPayForm((form) => ({ ...form, ...changes }))}
               />
               <div className="col-span-2 flex justify-end">
                 <button
