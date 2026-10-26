@@ -120,7 +120,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
             <NavItem to="/dashboard" icon="ti-layout-dashboard" label="Dashboard" />
 
             <SectionLabel label="Organizations" />
-            <NavItem to="/org-onboarding" icon="ti-building-check" label="Approvals" />
+            <NavItem to="/org-onboarding" icon="ti-checklist" label="Approvals" />
 
             {/* Organizations — uses end prop so it only highlights on exact /organizations */}
             <NavLink

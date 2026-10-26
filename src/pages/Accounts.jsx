@@ -13,7 +13,7 @@ const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
 function typeColor(type) {
   const map = {
     CURRENT: { bg: 'bg-blue-50', text: 'text-blue-700', icon: 'ti-building-bank' },
-    SAVINGS: { bg: 'bg-green-50', text: 'text-green-700', icon: 'ti-piggy-bank' },
+    SAVINGS: { bg: 'bg-green-50', text: 'text-green-700', icon: 'ti-pig-money' },
     PAYROLL: { bg: 'bg-purple-50', text: 'text-purple-700', icon: 'ti-users' },
     REVENUE: { bg: 'bg-teal-50', text: 'text-teal-700', icon: 'ti-trending-up' },
     EXPENSE: { bg: 'bg-red-50', text: 'text-red-700', icon: 'ti-trending-down' },
