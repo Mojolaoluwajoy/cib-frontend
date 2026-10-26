@@ -66,7 +66,7 @@ only control what is shown.
 
 ```
 src/
-  api/axios.js          shared API client (base URL, auth header, logout on 401)
+  api/axios.js          shared API client (base URL, access token, refresh and retry on 401)
   context/AuthContext   login state, token validation on startup, 30-minute inactivity logout
   components/           layout, sidebar, top bar
   pages/                one file per screen
@@ -75,9 +75,22 @@ src/
 
 ## Authentication
 
-On login the JWT and user details are stored in `localStorage` under `cib_user`. Every request
-sends the token as a `Bearer` header. Any `401` response, or 30 minutes without activity, signs
-the user out.
+No token is ever stored where page scripts can read it:
+
+- The **refresh token** is set by the backend in an `HttpOnly` cookie (`cib_refresh`), sent only to
+  the backend's `/auth` endpoints.
+- The **access token** (valid for 30 minutes) is kept in memory and sent as a `Bearer` header.
+  When a request gets a `401`, the app asks `/auth/refresh` for a new one and retries once. After a
+  reload, the same call restores the session.
+- `localStorage` only holds who is signed in (`cib_user`: name, email, role) so the UI and other
+  tabs know.
+
+Signing out calls `/auth/logout`, which ends the session on the server. If the session cannot be
+renewed (it was ended elsewhere, the password changed, or it is older than 7 days), the user is
+signed out. 30 minutes without activity also signs the user out.
+
+The cookie is `SameSite=Strict`, so the frontend and the API must be on the same site (for example
+`app.example.com` and `api.example.com`, or both on `localhost` in development).
 
 The session is shared by all open tabs. The time of the last activity is kept in `localStorage`
 under `cib_last_active`, so working in one tab keeps every tab signed in. A session that has been

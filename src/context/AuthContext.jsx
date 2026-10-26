@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
-import api from '../api/axios';
+import {
+  logout as endServerSession,
+  refreshSession,
+  setAccessToken,
+  setSessionEndedHandler,
+} from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -12,9 +17,12 @@ const CHECK_INTERVAL = 15 * 1000;
 const ACTIVITY_WRITE_INTERVAL = 5 * 1000;
 
 const SIGNED_OUT = { token: null, role: null, name: null, email: null };
+// localStorage keeps only who is signed in (for the UI and other tabs); the access token stays in
+// memory and the refresh token in an HttpOnly cookie.
+const PROFILE_KEY = 'cib_user';
 
 function clearSession() {
-  localStorage.removeItem('cib_user');
+  localStorage.removeItem(PROFILE_KEY);
   localStorage.removeItem(LAST_ACTIVE_KEY);
 }
 
@@ -23,28 +31,32 @@ function isInactive() {
   return !lastActive || Date.now() - lastActive > INACTIVITY_LIMIT;
 }
 
-// Reads the saved session, dropping it if it has been idle too long (e.g. the browser was closed)
-function readStoredSession() {
+// Reads who was signed in, dropping it if the session has been idle too long (e.g. the browser was closed)
+function readStoredProfile() {
   try {
-    const stored = JSON.parse(localStorage.getItem('cib_user'));
-    if (!stored?.token) return SIGNED_OUT;
+    const stored = JSON.parse(localStorage.getItem(PROFILE_KEY));
+    if (!stored?.role) return null;
     if (isInactive()) {
       clearSession();
-      return SIGNED_OUT;
+      return null;
     }
-    return stored;
+    return { role: stored.role, name: stored.name, email: stored.email };
   } catch {
-    return SIGNED_OUT;
+    return null;
   }
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(readStoredSession);
-
-  const [validating, setValidating] = useState(true);
+  const [user, setUser] = useState(SIGNED_OUT);
+  // Renewing the access token on startup; the app waits so it doesn't flash the login page
+  const [validating, setValidating] = useState(() => readStoredProfile() !== null);
   const lastActivityWrite = useRef(0);
+  // Set while signing out, so repeated triggers (e.g. the inactivity check) don't sign out twice
+  const signingOut = useRef(false);
 
-  const logout = useCallback(() => {
+  // Clears this tab's session and goes to the login page
+  const endLocalSession = useCallback(() => {
+    setAccessToken(null);
     clearSession();
     setUser(SIGNED_OUT);
     const publicPaths = ['/login', '/register', '/forgot-password', '/complete-registration'];
@@ -54,41 +66,43 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // ── Validate token on app startup ──
-  // When the app loads, if a token exists in localStorage,
-  // make a quick API call to confirm it is still valid.
-  // If the backend returns 401, clear the session immediately.
-  useEffect(() => {
-    async function validateStoredToken() {
-      const stored = localStorage.getItem('cib_user');
-      if (!stored) {
-        setValidating(false);
-        return;
-      }
-      try {
-        const parsed = JSON.parse(stored);
-        if (!parsed?.token) {
-          setValidating(false);
-          return;
-        }
-        // Call a lightweight authenticated endpoint to verify token.
-        // The api client attaches the stored token automatically.
-        await api.get('/dashboard/stats');
-        // If 200 — token is valid, keep user logged in
-      } catch (err) {
-        const status = err.response?.status;
-        if (status === 401 || status === 403) {
-          // Token invalid or user disabled/deleted — clear session
-          clearSession();
-          setUser(SIGNED_OUT);
-        }
-        // Network error — keep user logged in, they'll get kicked on next API call
-      } finally {
-        setValidating(false);
-      }
+  // Signs out everywhere: the backend ends the session, so other tabs and devices using it stop working.
+  // Waits for the backend before leaving the page, which would otherwise cancel the request.
+  const logout = useCallback(async () => {
+    if (signingOut.current) return;
+    signingOut.current = true;
+    try {
+      await endServerSession();
+      endLocalSession();
+    } finally {
+      signingOut.current = false;
     }
-    validateStoredToken();
+  }, [endLocalSession]);
+
+  // A request found the session over (expired, ended elsewhere, password changed)
+  useEffect(() => {
+    setSessionEndedHandler(endLocalSession);
+  }, [endLocalSession]);
+
+  // Restores the session after a reload or in a new tab, using the refresh cookie
+  const resume = useCallback(async (profile) => {
+    try {
+      const data = await refreshSession();
+      setUser({ ...profile, token: data.token });
+    } catch (err) {
+      // The backend refused the cookie: the session is over. Network errors leave the profile for next time.
+      if (err.response) clearSession();
+      setUser(SIGNED_OUT);
+    }
   }, []);
+
+  useEffect(() => {
+    const profile = readStoredProfile();
+    if (!profile) return;
+    // resume only sets state after the refresh request answers, so this is not a synchronous update
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    resume(profile).finally(() => setValidating(false));
+  }, [resume]);
 
   // ── Inactivity logout ──
   // Activity in any tab updates the shared timestamp; every tab checks it periodically.
@@ -115,25 +129,28 @@ export function AuthProvider({ children }) {
   // ── Follow sign-in and sign-out from other tabs ──
   useEffect(() => {
     function onStorage(e) {
-      if (e.key !== 'cib_user' && e.key !== null) return;
-      const next = readStoredSession();
-      if (!next.token) logout();
-      else setUser(next);
+      if (e.key !== PROFILE_KEY && e.key !== null) return;
+      const profile = readStoredProfile();
+      // The other tab already ended the session on the server
+      if (!profile) endLocalSession();
+      else if (!user.token) resume(profile);
+      else setUser((current) => ({ ...current, ...profile }));
     }
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, [logout]);
+  }, [endLocalSession, resume, user.token]);
 
+  // Called after a successful login (and by the profile page when the name or email changes)
   function login(data) {
-    const userData = {
-      token: data.token,
+    const profile = {
       role: data.role,
       name: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
       email: data.email,
     };
-    localStorage.setItem('cib_user', JSON.stringify(userData));
+    setAccessToken(data.token);
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
     localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()));
-    setUser(userData);
+    setUser({ ...profile, token: data.token });
   }
 
   // Show nothing while validating to prevent flash of wrong content

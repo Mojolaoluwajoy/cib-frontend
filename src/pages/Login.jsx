@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/axios';
+import { login as signIn } from '../api/axios';
 
 export default function Login() {
   const { login } = useAuth();
@@ -29,12 +29,8 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/login', {
-        email: form.email,
-        password: form.password,
-      });
-
-      const loginData = res.data.data || res.data;
+      // Also stores the refresh-token cookie the backend sets
+      const loginData = await signIn({ email: form.email, password: form.password });
 
       login(loginData);
       navigate('/dashboard');

@@ -83,8 +83,8 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
         .toUpperCase()
     : '?';
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     navigate('/login');
   }
 
