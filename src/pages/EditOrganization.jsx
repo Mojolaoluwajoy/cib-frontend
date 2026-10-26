@@ -121,7 +121,7 @@ export default function EditOrganization() {
     return (
       <Layout>
         <Topbar title="Edit Organization" subtitle="Loading..." />
-        <main className="p-7">
+        <main className="p-4 sm:p-7">
           <p className="text-sm text-gray-400">Loading organization details...</p>
         </main>
       </Layout>
@@ -132,7 +132,7 @@ export default function EditOrganization() {
     return (
       <Layout>
         <Topbar title="Edit Organization" subtitle="Could not load" />
-        <main className="p-7">
+        <main className="p-4 sm:p-7">
           <div className="bg-white border border-gray-200 rounded-xl">
             <LoadError message={loadError} onRetry={loadOrg} />
           </div>
@@ -150,7 +150,7 @@ export default function EditOrganization() {
   return (
     <Layout>
       <Topbar title="Edit Organization" subtitle={`Updating details for ${org.name}`} />
-      <main className="p-7 max-w-2xl flex flex-col gap-6">
+      <main className="p-4 sm:p-7 max-w-2xl flex flex-col gap-6">
         <Link
           to="/org-onboarding"
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors"
@@ -161,7 +161,7 @@ export default function EditOrganization() {
         {/* Current org details */}
         <div className="bg-slate-900 rounded-xl p-6">
           <h2 className="text-white font-semibold text-base mb-4">Current details</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { label: 'Name', value: org.name },
               { label: 'Status', value: org.organizationStatus },

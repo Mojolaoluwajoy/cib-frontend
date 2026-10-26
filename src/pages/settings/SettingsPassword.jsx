@@ -86,7 +86,7 @@ export default function SettingsPassword() {
     <Layout>
       <Topbar title="Change Password" subtitle="Update your account password" />
 
-      <main className="p-7 max-w-lg flex flex-col gap-5">
+      <main className="p-4 sm:p-7 max-w-lg flex flex-col gap-5">
         {/* Back link */}
         <Link
           to="/settings"

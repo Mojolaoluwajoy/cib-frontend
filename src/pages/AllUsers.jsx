@@ -105,7 +105,7 @@ export default function AllUsers() {
   return (
     <Layout>
       <Topbar title="All Users" subtitle="View and edit all users across all organizations" />
-      <main className="p-7 flex flex-col gap-6">
+      <main className="p-4 sm:p-7 flex flex-col gap-6">
         <div className="bg-white border border-gray-200 rounded-xl p-6">
           <div className="flex items-center justify-between mb-5">
             <div>

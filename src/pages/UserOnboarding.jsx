@@ -110,7 +110,7 @@ export default function UserOnboarding() {
     <Layout>
       <Topbar title="User Onboarding" subtitle="Invite users and complete their registration" />
 
-      <main className="p-7 flex flex-col gap-6">
+      <main className="p-4 sm:p-7 flex flex-col gap-6">
         {/* Tabs */}
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 w-fit">
           {TABS.map((tab, i) => (
@@ -250,7 +250,7 @@ export default function UserOnboarding() {
             )}
 
             {!regDone && (
-              <form onSubmit={handleRegister} className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleRegister} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
                   {
                     label: 'Invitation token',
@@ -282,7 +282,7 @@ export default function UserOnboarding() {
                     full: true,
                   },
                 ].map(({ label, key, type, placeholder, full }) => (
-                  <div key={key} className={`flex flex-col gap-1.5 ${full ? 'col-span-2' : ''}`}>
+                  <div key={key} className={`flex flex-col gap-1.5 ${full ? 'sm:col-span-2' : ''}`}>
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       {label}
                     </label>
@@ -295,7 +295,7 @@ export default function UserOnboarding() {
                     />
                   </div>
                 ))}
-                <div className="col-span-2 flex justify-end mt-2">
+                <div className="sm:col-span-2 flex justify-end mt-2">
                   <button
                     type="submit"
                     disabled={regLoading}

@@ -29,7 +29,7 @@ export default function SettingsMenu() {
     <Layout>
       <Topbar title="Settings" subtitle="Manage your account and system settings" />
 
-      <main className="p-7 max-w-2xl flex flex-col gap-4">
+      <main className="p-4 sm:p-7 max-w-2xl flex flex-col gap-4">
         <p className="text-sm text-gray-500">Select a setting to configure</p>
 
         {options.map(({ label, sub, icon, color, href }) => (

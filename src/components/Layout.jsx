@@ -1,14 +1,27 @@
+import { useState } from 'react';
 import Sidebar from './Sidebar';
+import { SidebarContext } from './sidebarContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function Layout({ children }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  // Only matters below the lg breakpoint, where the sidebar is hidden until opened
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">{children}</div>
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <SidebarContext.Provider value={{ openSidebar: () => setSidebarOpen(true) }}>
+        <div className="lg:ml-56 flex-1 min-w-0 flex flex-col min-h-screen">{children}</div>
+      </SidebarContext.Provider>
 
       {/* WhatsApp support button — ADMIN only */}
       {isAdmin && (

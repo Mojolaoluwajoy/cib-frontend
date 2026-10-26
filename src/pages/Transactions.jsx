@@ -67,7 +67,7 @@ function Flow({ steps }) {
 
 function Field({ label, value, onChange, type = 'text', placeholder, full }) {
   return (
-    <div className={`flex flex-col gap-1.5 ${full ? 'col-span-2' : ''}`}>
+    <div className={`flex flex-col gap-1.5 ${full ? 'sm:col-span-2' : ''}`}>
       <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</label>
       <input
         type={type}
@@ -365,7 +365,7 @@ export default function Transactions() {
   return (
     <Layout>
       <Topbar title="Transactions" subtitle="Manage and view transactions" />
-      <main className="p-7 flex flex-col gap-6">
+      <main className="p-4 sm:p-7 flex flex-col gap-6">
         {/* Tabs — only show tabs relevant to role */}
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 flex-wrap w-fit">
           {TABS.map(({ key, label, icon }) => (
@@ -393,7 +393,7 @@ export default function Transactions() {
             </p>
             <Flow steps={['Maker initiates', 'Approver reviews', 'Transfer complete']} />
             <Alert success={intSuccess} error={intError} />
-            <form onSubmit={handleInternal} className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleInternal} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
                 label="Source account number"
                 value={intForm.sourceAccount}
@@ -413,7 +413,7 @@ export default function Transactions() {
                 onChange={(e) => setIntForm({ ...intForm, amount: e.target.value })}
                 placeholder="e.g. 500000"
               />
-              <div className="col-span-2 flex justify-end">
+              <div className="sm:col-span-2 flex justify-end">
                 <button
                   type="submit"
                   disabled={intLoading}
@@ -449,7 +449,7 @@ export default function Transactions() {
               After approval this payout stays Pending until Paystack confirms via webhook.
             </div>
             <Alert success={paySuccess} error={payError} />
-            <form onSubmit={handlePayout} className="grid grid-cols-2 gap-4">
+            <form onSubmit={handlePayout} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
                 label="Source account number"
                 value={payForm.sourceAccount}
@@ -467,7 +467,7 @@ export default function Transactions() {
                 recipient={payForm}
                 onChange={(changes) => setPayForm((form) => ({ ...form, ...changes }))}
               />
-              <div className="col-span-2 flex justify-end">
+              <div className="sm:col-span-2 flex justify-end">
                 <button
                   type="submit"
                   disabled={payLoading}
@@ -497,7 +497,7 @@ export default function Transactions() {
             </p>
             <Flow steps={['Submit request', 'Paystack processes', 'Account credited']} />
             <Alert success={fundSuccess} error={fundError} />
-            <form onSubmit={handleFunding} className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleFunding} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field
                 label="Destination account number"
                 value={fundForm.destinationAccount}
@@ -518,7 +518,7 @@ export default function Transactions() {
                 onChange={(e) => setFundForm({ ...fundForm, email: e.target.value })}
                 placeholder="Payer's email for Paystack"
               />
-              <div className="col-span-2 flex justify-end">
+              <div className="sm:col-span-2 flex justify-end">
                 <button
                   type="submit"
                   disabled={fundLoading}

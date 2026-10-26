@@ -91,7 +91,7 @@ export default function SettingsCurrency() {
     <Layout>
       <Topbar title="Currency Management" subtitle="View and manage system currencies" />
 
-      <main className="p-7 max-w-2xl flex flex-col gap-5">
+      <main className="p-4 sm:p-7 max-w-2xl flex flex-col gap-5">
         {/* Back link */}
         <Link
           to="/settings"

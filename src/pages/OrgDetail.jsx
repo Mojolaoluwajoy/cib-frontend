@@ -152,7 +152,7 @@ export default function OrgDetail() {
     return (
       <Layout>
         <Topbar title="Organization" subtitle="Loading..." />
-        <main className="p-7 flex items-center justify-center py-20">
+        <main className="p-4 sm:p-7 flex items-center justify-center py-20">
           <div className="flex items-center gap-3 text-gray-400">
             <i className="ti ti-loader animate-spin text-xl" />
             <span className="text-sm">Loading organization details...</span>
@@ -166,7 +166,7 @@ export default function OrgDetail() {
     return (
       <Layout>
         <Topbar title="Organization" subtitle="Could not load" />
-        <main className="p-7">
+        <main className="p-4 sm:p-7">
           <div className="bg-white border border-gray-200 rounded-xl">
             <LoadError message={loadErrors.org} onRetry={loadAll} />
           </div>
@@ -184,7 +184,7 @@ export default function OrgDetail() {
   return (
     <Layout>
       <Topbar title={org.name} subtitle="Organization detail — acting on behalf" />
-      <main className="p-7 flex flex-col gap-6">
+      <main className="p-4 sm:p-7 flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <Link
             to="/organizations"
@@ -239,7 +239,7 @@ export default function OrgDetail() {
         {/* ── Overview ── */}
         {activeTab === 'overview' && (
           <div className="flex flex-col gap-4">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 {
                   label: 'Total accounts',
@@ -288,7 +288,7 @@ export default function OrgDetail() {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { label: 'Bank', value: org.dvaBankName },
                     { label: 'Account number', value: org.dvaAccountNumber },

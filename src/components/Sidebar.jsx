@@ -64,7 +64,8 @@ function TxnDropdown({ links }) {
   );
 }
 
-export default function Sidebar() {
+// On large screens the sidebar is always shown; on smaller ones it slides in when `open` is set.
+export default function Sidebar({ open = false, onClose = () => {} }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -88,11 +89,25 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-56 flex-shrink-0 bg-slate-900 flex flex-col min-h-screen fixed top-0 left-0 bottom-0">
+    <aside
+      // Following a link on a small screen closes the sidebar
+      onClick={(e) => e.target.closest('a') && onClose()}
+      className={`w-56 flex-shrink-0 bg-slate-900 flex flex-col min-h-screen fixed top-0 left-0 bottom-0 z-40 transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
+    >
       {/* Logo */}
-      <div className="px-5 py-6 border-b border-white/10">
-        <div className="text-white font-semibold text-base tracking-tight">CIB Platform</div>
-        <div className="text-white/40 text-xs mt-1">Corporate Internet Banking</div>
+      <div className="px-5 py-6 border-b border-white/10 flex items-start justify-between">
+        <div>
+          <div className="text-white font-semibold text-base tracking-tight">CIB Platform</div>
+          <div className="text-white/40 text-xs mt-1">Corporate Internet Banking</div>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close menu"
+          className="lg:hidden text-white/60 hover:text-white"
+        >
+          <i className="ti ti-x text-lg" />
+        </button>
       </div>
 
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">

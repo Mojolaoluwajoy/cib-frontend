@@ -164,8 +164,8 @@ function OrgRegistrationForm() {
 
       {/* ── Step 1: Organization details ── */}
       {step === 1 && (
-        <form onSubmit={handleNext} className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5 col-span-2">
+        <form onSubmit={handleNext} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Organization name
             </label>
@@ -202,7 +202,7 @@ function OrgRegistrationForm() {
               className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
             />
           </div>
-          <div className="flex flex-col gap-1.5 col-span-2">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               Registration number
             </label>
@@ -214,7 +214,7 @@ function OrgRegistrationForm() {
               className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
             />
           </div>
-          <div className="col-span-2 flex justify-end mt-2">
+          <div className="sm:col-span-2 flex justify-end mt-2">
             <button
               type="submit"
               className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-all"
@@ -227,7 +227,7 @@ function OrgRegistrationForm() {
 
       {/* ── Step 2: Admin account details ── */}
       {step === 2 && (
-        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               First name
@@ -278,7 +278,7 @@ function OrgRegistrationForm() {
               className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
             />
           </div>
-          <div className="flex flex-col gap-1.5 col-span-2">
+          <div className="flex flex-col gap-1.5 sm:col-span-2">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
               NIN
             </label>
@@ -291,7 +291,7 @@ function OrgRegistrationForm() {
               className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
             />
           </div>
-          <div className="col-span-2 flex justify-between mt-2">
+          <div className="sm:col-span-2 flex justify-between mt-2">
             <button
               type="button"
               onClick={() => {
@@ -648,7 +648,7 @@ export default function OrgOnboarding() {
             : 'Register a new organization and admin account'
         }
       />
-      <main className="p-7 flex flex-col gap-6 max-w-4xl">
+      <main className="p-4 sm:p-7 flex flex-col gap-6 max-w-4xl">
         {isSuperAdmin && <OrgApprovalsTable />}
         {!isSuperAdmin && <OrgRegistrationForm />}
       </main>

@@ -73,7 +73,7 @@ function SuperAdminDashboard({ user }) {
   }, [user?.token]);
 
   return (
-    <main className="p-7 flex flex-col gap-6">
+    <main className="p-4 sm:p-7 flex flex-col gap-6">
       {/* Welcome banner */}
       <div className="bg-slate-900 rounded-xl p-6 flex items-center justify-between">
         <div>
@@ -101,7 +101,7 @@ function SuperAdminDashboard({ user }) {
       )}
 
       {/* Metric cards — all numbers come from stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Total Organizations"
           value={loading ? '—' : stats?.totalOrganizations}
@@ -184,7 +184,7 @@ function SuperAdminDashboard({ user }) {
       {/* Quick actions */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Quick actions</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             {
               label: 'Approve organizations',
@@ -303,7 +303,7 @@ function OperationalDashboard({ user }) {
   }, [canSeePending]);
 
   return (
-    <main className="p-7 flex flex-col gap-6">
+    <main className="p-4 sm:p-7 flex flex-col gap-6">
       {[
         ['org', loadOrgDetails],
         ['stats', loadStats],
@@ -330,7 +330,7 @@ function OperationalDashboard({ user }) {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white/10 rounded-lg p-3">
               <div className="text-white/50 text-xs mb-1 uppercase tracking-wide">Bank</div>
               <div className="text-white text-sm font-semibold">
@@ -367,7 +367,9 @@ function OperationalDashboard({ user }) {
         </div>
       )}
       {/* Metric cards — numbers come from stats object */}
-      <div className={`grid gap-4 ${isApprover ? 'grid-cols-4' : 'grid-cols-3'}`}>
+      <div
+        className={`grid gap-4 ${isApprover ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-3'}`}
+      >
         <MetricCard
           label="Total Accounts"
           value={loading ? '—' : stats?.totalAccounts}
@@ -401,7 +403,7 @@ function OperationalDashboard({ user }) {
       </div>
 
       {/* Row: Recent transactions + Pending approvals */}
-      <div className={`grid gap-5 ${canSeePending ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <div className={`grid gap-5 ${canSeePending ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
         {/* Recent transactions list */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -515,7 +517,7 @@ function OperationalDashboard({ user }) {
       {/* Quick actions */}
       <div className="bg-white border border-gray-200 rounded-xl p-5">
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Quick actions</h2>
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             {
               label: 'New onboarding',

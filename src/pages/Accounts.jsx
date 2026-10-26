@@ -117,7 +117,7 @@ export default function Accounts() {
     <Layout>
       <Topbar title="Accounts" subtitle="Create and manage organization accounts" />
 
-      <main className="p-7 flex flex-col gap-6">
+      <main className="p-4 sm:p-7 flex flex-col gap-6">
         {/* Tabs */}
         <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1.5 w-fit">
           {TABS.map((tab, i) => (
@@ -313,7 +313,7 @@ export default function Accounts() {
           <div className="flex flex-col gap-5">
             {/* Account cards */}
             {accsLoaded && accounts.length > 0 && (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {accounts.map((acc, i) => {
                   const currency = acc.currencyCode?.currencyCode || 'NGN';
                   const { bg, text, icon } = typeColor(acc.type);

@@ -109,7 +109,7 @@ export default function Profile() {
     <Layout>
       <Topbar title="My Profile" subtitle="View and update your profile information" />
 
-      <main className="p-7 flex flex-col gap-6 max-w-2xl">
+      <main className="p-4 sm:p-7 flex flex-col gap-6 max-w-2xl">
         {/* ── Profile display card ── */}
         <div className="bg-slate-900 rounded-xl p-6 flex items-center gap-5">
           <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white text-2xl font-semibold flex-shrink-0">
@@ -127,7 +127,7 @@ export default function Profile() {
         {/* ── Current profile details ── */}
         <div className="bg-white border border-gray-200 rounded-xl p-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Current details</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { label: 'First name', value: user?.name?.split(' ')[0] || '—' },
               { label: 'Last name', value: user?.name?.split(' ')[1] || '—' },

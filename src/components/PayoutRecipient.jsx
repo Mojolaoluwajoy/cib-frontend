@@ -118,7 +118,7 @@ export default function PayoutRecipient({ recipient, onChange }) {
         />
       </div>
 
-      <div className="col-span-2 flex flex-col gap-1.5">
+      <div className="sm:col-span-2 flex flex-col gap-1.5">
         <span className={labelClass}>Account name</span>
         <div
           aria-live="polite"
