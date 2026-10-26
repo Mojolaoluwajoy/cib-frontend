@@ -6,6 +6,7 @@ import api from '../../api/axios';
 import LoadError from '../../components/LoadError';
 import { loadErrorMessage } from '../../utils/loadError';
 import { Pill } from '../../components/Pill';
+import CurrencySelect from '../../components/CurrencySelect';
 
 // Inactive currencies are shown in red, unlike inactive users
 const CURRENCY_STATUS_COLORS = { INACTIVE: 'bg-red-50 text-red-700' };
@@ -23,7 +24,7 @@ export default function SettingsCurrency() {
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [filterStatus, setFilterStatus] = useState('ACTIVE');
-  const [updateCode, setUpdateCode] = useState('NGN');
+  const [updateCode, setUpdateCode] = useState('');
   const [updateStatus, setUpdateStatus] = useState('ACTIVE');
   const [updateSuccess, setUpdateSuccess] = useState('');
   const [updateError, setUpdateError] = useState('');
@@ -73,6 +74,10 @@ export default function SettingsCurrency() {
     e.preventDefault();
     setUpdateError('');
     setUpdateSuccess('');
+    if (!updateCode) {
+      setUpdateError('Please select a currency.');
+      return;
+    }
     setUpdateLoading(true);
     try {
       await api.post('/currencies/status', {
@@ -287,16 +292,12 @@ export default function SettingsCurrency() {
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Currency
                 </label>
-                <select
+                <CurrencySelect
+                  includeInactive
+                  reloadKey={updateSuccess}
                   value={updateCode}
                   onChange={(e) => setUpdateCode(e.target.value)}
-                  className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                >
-                  <option value="NGN">NGN — Nigerian Naira</option>
-                  <option value="USD">USD — US Dollar</option>
-                  <option value="GBP">GBP — British Pound</option>
-                  <option value="EUR">EUR — Euro</option>
-                </select>
+                />
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">

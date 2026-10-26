@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
+import CurrencySelect from '../components/CurrencySelect';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import LoadError from '../components/LoadError';
@@ -8,7 +9,6 @@ import { loadErrorMessage } from '../utils/loadError';
 import { formatMoney } from '../utils/format';
 
 const ACCOUNT_TYPES = ['CURRENT', 'SAVINGS', 'PAYROLL', 'REVENUE', 'EXPENSE', 'ASSET'];
-const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
 
 function typeColor(type) {
   const map = {
@@ -181,18 +181,10 @@ export default function Accounts() {
                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                       Currency
                     </label>
-                    <select
+                    <CurrencySelect
                       value={form.currencyCode}
                       onChange={(e) => setForm({ ...form, currencyCode: e.target.value })}
-                      className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                    >
-                      <option value="">Select currency</option>
-                      {CURRENCIES.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   <div className="flex justify-end mt-2">
                     <button

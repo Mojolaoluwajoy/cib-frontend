@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
+import CurrencySelect from '../components/CurrencySelect';
 import api from '../api/axios';
 import LoadError from '../components/LoadError';
 import { loadErrorMessage } from '../utils/loadError';
@@ -18,7 +19,6 @@ const TABS = [
   { key: 'user-onboarding', label: 'Invite User', icon: 'ti-user-plus' },
 ];
 
-const CURRENCIES = ['NGN', 'USD', 'GBP', 'EUR'];
 const ACCOUNT_TYPES = ['CURRENT', 'SAVINGS', 'PAYROLL', 'REVENUE', 'EXPENSE', 'ASSET'];
 
 export default function OrgDetail() {
@@ -504,18 +504,10 @@ export default function OrgDetail() {
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Currency
                 </label>
-                <select
+                <CurrencySelect
                   value={accForm.currencyCode}
                   onChange={(e) => setAccForm({ ...accForm, currencyCode: e.target.value })}
-                  className="px-3 py-2.5 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                >
-                  <option value="">Select currency</option>
-                  {CURRENCIES.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex justify-end">
                 <button
