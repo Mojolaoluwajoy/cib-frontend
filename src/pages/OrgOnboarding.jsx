@@ -7,6 +7,26 @@ import api from '../api/axios';
 import LoadError from '../components/LoadError';
 import { loadErrorMessage } from '../utils/loadError';
 import { Pill } from '../components/Pill';
+import {
+  checkEmail,
+  checkNin,
+  checkPassword,
+  firstError,
+  submitErrorMessage,
+} from '../utils/validation';
+
+// Form labels for the backend's field names, used when it rejects the registration
+const REGISTRATION_LABELS = {
+  name: 'Organization name',
+  organizationEmail: 'Organization email',
+  phoneNumber: 'Phone number',
+  registrationNumber: 'Registration number',
+  firstName: 'First name',
+  lastName: 'Last name',
+  email: 'Admin email',
+  password: 'Password',
+  nin: 'NIN',
+};
 // ══════════════════════════════════════════════
 // MULTI-STEP REGISTRATION FORM
 // Public — no login needed
@@ -40,6 +60,11 @@ function OrgRegistrationForm() {
       setError('Please fill in all organization details.');
       return;
     }
+    const problem = checkEmail(form.organizationEmail, 'Organization email');
+    if (problem) {
+      setError(problem);
+      return;
+    }
     setStep(2);
   }
 
@@ -49,6 +74,15 @@ function OrgRegistrationForm() {
     setSuccess('');
     if (!form.firstName || !form.lastName || !form.email || !form.password || !form.nin) {
       setError('Please fill in all admin details.');
+      return;
+    }
+    const problem = firstError(
+      checkEmail(form.email, 'Admin email'),
+      checkPassword(form.password),
+      checkNin(form.nin),
+    );
+    if (problem) {
+      setError(problem);
       return;
     }
     setLoading(true);
@@ -68,7 +102,9 @@ function OrgRegistrationForm() {
       });
       setStep(1);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(
+        submitErrorMessage(err, REGISTRATION_LABELS, 'Registration failed. Please try again.'),
+      );
     } finally {
       setLoading(false);
     }

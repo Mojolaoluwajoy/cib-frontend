@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import Alert from '../components/Alert';
+import { checkEmail, checkPassword, submitErrorMessage } from '../utils/validation';
+
+// Form labels for the backend's field names, used when it rejects the reset
+const RESET_LABELS = { email: 'Email', token: 'Reset token', newPassword: 'New password' };
 
 export default function ForgotPassword() {
   const [step, setStep] = useState(1); // 1 = enter email, 2 = enter token + new password
@@ -25,6 +29,11 @@ export default function ForgotPassword() {
     setStep1Success('');
     if (!email) {
       setStep1Error('Please enter your email address.');
+      return;
+    }
+    const emailProblem = checkEmail(email);
+    if (emailProblem) {
+      setStep1Error(emailProblem);
       return;
     }
     setStep1Loading(true);
@@ -51,8 +60,9 @@ export default function ForgotPassword() {
       setStep2Error('Please fill in both fields.');
       return;
     }
-    if (newPassword.length < 8) {
-      setStep2Error('Password must be at least 8 characters.');
+    const passwordProblem = checkPassword(newPassword);
+    if (passwordProblem) {
+      setStep2Error(passwordProblem);
       return;
     }
     setStep2Loading(true);
@@ -62,7 +72,7 @@ export default function ForgotPassword() {
       setDone(true);
       setTimeout(() => (window.location.href = '/login'), 2000);
     } catch (err) {
-      setStep2Error(err.response?.data?.message || 'Invalid or expired token.');
+      setStep2Error(submitErrorMessage(err, RESET_LABELS, 'Invalid or expired token.'));
     } finally {
       setStep2Loading(false);
     }

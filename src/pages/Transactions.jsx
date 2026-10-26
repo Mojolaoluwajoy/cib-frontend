@@ -9,10 +9,37 @@ import LoadError from '../components/LoadError';
 import { formatMoney } from '../utils/format';
 import { idempotencyKeyFor } from '../utils/idempotency';
 import { loadErrorMessage } from '../utils/loadError';
+import {
+  checkAccountNumber,
+  checkAmount,
+  checkEmail,
+  firstError,
+  submitErrorMessage,
+} from '../utils/validation';
 import api from '../api/axios';
 
 // Number of rows per page in All Transactions
 const PAGE_SIZE = 20;
+
+// Form labels for the backend's field names, used when it rejects a request
+const INTERNAL_LABELS = {
+  sourceAccount: 'Source account number',
+  destinationAccount: 'Destination account number',
+  amount: 'Amount',
+};
+const PAYOUT_LABELS = {
+  sourceAccount: 'Source account number',
+  amount: 'Amount',
+  accountNumber: 'Recipient account number',
+  bankCode: 'Bank code',
+  bankName: 'Bank name',
+  accountName: 'Account name',
+};
+const FUNDING_LABELS = {
+  accountNumber: 'Destination account number',
+  amount: 'Amount',
+  email: 'Email',
+};
 
 function Flow({ steps }) {
   return (
@@ -155,6 +182,11 @@ export default function Transactions() {
       setIntError('Please fill in all fields.');
       return;
     }
+    const intProblem = checkAmount(intForm.amount);
+    if (intProblem) {
+      setIntError(intProblem);
+      return;
+    }
     setIntLoading(true);
     try {
       const payload = {
@@ -173,7 +205,7 @@ export default function Transactions() {
       intKeyRef.current = null;
       setIntForm({ sourceAccount: '', destinationAccount: '', amount: '' });
     } catch (err) {
-      setIntError(err.response?.data?.message || 'Transfer failed.');
+      setIntError(submitErrorMessage(err, INTERNAL_LABELS, 'Transfer failed.'));
     } finally {
       setIntLoading(false);
     }
@@ -192,6 +224,14 @@ export default function Transactions() {
       !payForm.accountName
     ) {
       setPayError('Please fill in all fields.');
+      return;
+    }
+    const payProblem = firstError(
+      checkAmount(payForm.amount),
+      checkAccountNumber(payForm.accountNumber, 'Recipient account number'),
+    );
+    if (payProblem) {
+      setPayError(payProblem);
       return;
     }
     setPayLoading(true);
@@ -216,7 +256,7 @@ export default function Transactions() {
         accountName: '',
       });
     } catch (err) {
-      setPayError(err.response?.data?.message || 'Payout failed.');
+      setPayError(submitErrorMessage(err, PAYOUT_LABELS, 'Payout failed.'));
     } finally {
       setPayLoading(false);
     }
@@ -228,6 +268,11 @@ export default function Transactions() {
     setFundSuccess('');
     if (!fundForm.destinationAccount || !fundForm.amount || !fundForm.email) {
       setFundError('Please fill in all fields.');
+      return;
+    }
+    const fundProblem = firstError(checkAmount(fundForm.amount), checkEmail(fundForm.email));
+    if (fundProblem) {
+      setFundError(fundProblem);
       return;
     }
     setFundLoading(true);
@@ -255,7 +300,7 @@ export default function Transactions() {
       fundKeyRef.current = null;
       setFundForm({ destinationAccount: '', amount: '', email: '' });
     } catch (err) {
-      setFundError(err.response?.data?.message || 'Funding failed.');
+      setFundError(submitErrorMessage(err, FUNDING_LABELS, 'Funding failed.'));
     } finally {
       setFundLoading(false);
     }

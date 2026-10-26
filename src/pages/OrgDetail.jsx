@@ -5,6 +5,7 @@ import Topbar from '../components/Topbar';
 import api from '../api/axios';
 import LoadError from '../components/LoadError';
 import { loadErrorMessage } from '../utils/loadError';
+import { checkEmail, submitErrorMessage } from '../utils/validation';
 import { Pill, TypePill } from '../components/Pill';
 import { formatMoney } from '../utils/format';
 
@@ -126,6 +127,11 @@ export default function OrgDetail() {
       setInviteError('Please enter email and select a role.');
       return;
     }
+    const emailProblem = checkEmail(invite.userEmail);
+    if (emailProblem) {
+      setInviteError(emailProblem);
+      return;
+    }
     setInviteLoading(true);
     try {
       await api.post('/users/invitation', invite);
@@ -134,7 +140,9 @@ export default function OrgDetail() {
       );
       setInvite({ userEmail: '', role: '' });
     } catch (err) {
-      setInviteError(err.response?.data?.message || 'Failed to send invitation.');
+      setInviteError(
+        submitErrorMessage(err, { userEmail: 'Email', role: 'Role' }, 'Failed to send invitation.'),
+      );
     } finally {
       setInviteLoading(false);
     }

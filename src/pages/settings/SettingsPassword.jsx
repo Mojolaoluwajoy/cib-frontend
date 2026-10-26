@@ -4,6 +4,10 @@ import Layout from '../../components/Layout';
 import Topbar from '../../components/Topbar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
+import { checkPassword, submitErrorMessage } from '../../utils/validation';
+
+// Form labels for the backend's field names, used when it rejects the change
+const PASSWORD_LABELS = { oldPassword: 'Current password', newPassword: 'New password' };
 
 function PasswordField({ label, value, onChange, placeholder }) {
   const [show, setShow] = useState(false);
@@ -52,8 +56,9 @@ export default function SettingsPassword() {
       setError('New passwords do not match.');
       return;
     }
-    if (form.newPassword.length < 8) {
-      setError('New password must be at least 8 characters.');
+    const passwordProblem = checkPassword(form.newPassword, 'New password');
+    if (passwordProblem) {
+      setError(passwordProblem);
       return;
     }
     if (form.newPassword === form.oldPassword) {
@@ -71,7 +76,7 @@ export default function SettingsPassword() {
       setSuccess('Password changed successfully!');
       setForm({ oldPassword: '', newPassword: '', confirm: '' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change password.');
+      setError(submitErrorMessage(err, PASSWORD_LABELS, 'Failed to change password.'));
     } finally {
       setLoading(false);
     }

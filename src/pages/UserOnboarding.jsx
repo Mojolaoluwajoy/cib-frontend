@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import LoadError from '../components/LoadError';
 import { loadErrorMessage } from '../utils/loadError';
+import { checkEmail, submitErrorMessage } from '../utils/validation';
 import { Pill } from '../components/Pill';
 
 const TABS = ['Send Invite', 'Complete Registration', 'All Users'];
@@ -49,6 +50,11 @@ export default function UserOnboarding() {
       setInviteError('Please enter email and select a role.');
       return;
     }
+    const emailProblem = checkEmail(invite.userEmail);
+    if (emailProblem) {
+      setInviteError(emailProblem);
+      return;
+    }
     setInviteLoading(true);
     try {
       await api.post('/users/invitation', invite);
@@ -57,7 +63,9 @@ export default function UserOnboarding() {
       );
       setInvite({ userEmail: '', role: '' });
     } catch (err) {
-      setInviteError(err.response?.data?.message || 'Failed to send invitation.');
+      setInviteError(
+        submitErrorMessage(err, { userEmail: 'Email', role: 'Role' }, 'Failed to send invitation.'),
+      );
     } finally {
       setInviteLoading(false);
     }

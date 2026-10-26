@@ -1,6 +1,23 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api from '../api/axios';
+import {
+  checkEmail,
+  checkNin,
+  checkPassword,
+  firstError,
+  submitErrorMessage,
+} from '../utils/validation';
+
+// Form labels for the backend's field names, used when it rejects the registration
+const REGISTRATION_LABELS = {
+  token: 'Invitation token',
+  firstName: 'First name',
+  lastName: 'Last name',
+  email: 'Email',
+  password: 'Password',
+  nin: 'NIN',
+};
 
 function PasswordField({ label, value, onChange, placeholder }) {
   const [show, setShow] = useState(false);
@@ -66,12 +83,13 @@ export default function CompleteRegistration() {
       setError('Please fill in all fields.');
       return;
     }
-    if (form.password.length < 8) {
-      setError('Password must be at least 8 characters.');
-      return;
-    }
-    if (form.nin.length !== 11) {
-      setError('NIN must be exactly 11 digits.');
+    const problem = firstError(
+      checkEmail(form.email),
+      checkPassword(form.password),
+      checkNin(form.nin),
+    );
+    if (problem) {
+      setError(problem);
       return;
     }
     setLoading(true);
@@ -88,7 +106,11 @@ export default function CompleteRegistration() {
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
       setError(
-        err.response?.data?.message || 'Registration failed. Your token may be invalid or expired.',
+        submitErrorMessage(
+          err,
+          REGISTRATION_LABELS,
+          'Registration failed. Your token may be invalid or expired.',
+        ),
       );
     } finally {
       setLoading(false);
