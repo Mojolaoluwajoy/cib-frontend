@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import api from '../api/axios';
@@ -10,10 +11,10 @@ vi.mock('../context/AuthContext', () => ({
 }));
 vi.mock('../api/axios', () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
-function renderAs(role) {
+function renderAs(role, state) {
   mockUser = { token: 't', role, name: 'Test User' };
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[{ pathname: '/dashboard', state }]}>
       <Dashboard />
     </MemoryRouter>,
   );
@@ -64,5 +65,17 @@ describe('Dashboard', () => {
     renderAs('APPROVER');
     expect(await screen.findByText('Database unavailable')).toBeInTheDocument();
     expect(screen.queryByText('No pending transactions')).not.toBeInTheDocument();
+  });
+
+  it('explains a redirect from a page the user cannot open, and can be dismissed', async () => {
+    renderAs('MAKER', { notice: "You don't have access to that page." });
+    expect(screen.getByRole('status')).toHaveTextContent("You don't have access to that page.");
+    await userEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('shows no notice on a normal visit', () => {
+    renderAs('MAKER');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
@@ -570,6 +570,10 @@ function OperationalDashboard({ user }) {
 // ══════════════════════════════════════════════════════
 export default function Dashboard() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  // Set when the user was redirected here from a page their role can't open
+  const notice = location.state?.notice;
 
   return (
     <Layout>
@@ -577,6 +581,22 @@ export default function Dashboard() {
         title="Dashboard"
         subtitle={`Welcome back, ${user?.name?.split(' ')[0] || 'there'}`}
       />
+      {notice && (
+        <div
+          role="status"
+          className="mx-4 sm:mx-7 mt-4 sm:mt-7 -mb-2 flex items-start gap-2 bg-amber-50 text-amber-700 text-sm px-4 py-3 rounded-lg"
+        >
+          <i className="ti ti-lock mt-0.5" />
+          <span className="flex-1">{notice}</span>
+          <button
+            onClick={() => navigate('.', { replace: true, state: null })}
+            aria-label="Dismiss"
+            className="text-amber-500 hover:text-amber-700"
+          >
+            <i className="ti ti-x" />
+          </button>
+        </div>
+      )}
       {user?.role === 'SUPER_ADMIN' ? (
         <SuperAdminDashboard user={user} />
       ) : (

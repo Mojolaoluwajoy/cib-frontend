@@ -19,12 +19,17 @@ import EditOrganization from './pages/EditOrganization';
 import SettingsMenu from './pages/settings/SettingsMenu';
 import SettingsPassword from './pages/settings/SettingsPassword';
 import SettingsCurrency from './pages/settings/SettingsCurrency';
+import NotFound from './pages/NotFound';
+
+export const NO_ACCESS_NOTICE =
+  "You don't have access to that page, so you were brought to your dashboard.";
 
 export function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
   if (!user?.token) return <Navigate to="/login" replace />;
+  // The dashboard explains why the user ended up there
   if (allowedRoles && !allowedRoles.includes(user.role))
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/dashboard" replace state={{ notice: NO_ACCESS_NOTICE }} />;
   return children;
 }
 
@@ -184,7 +189,7 @@ export default function App() {
 
             {/* ── Catch all ── */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </PageErrorBoundary>
       </BrowserRouter>
