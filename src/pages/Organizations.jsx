@@ -3,23 +3,27 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import api from '../api/axios';
+import LoadError from '../components/LoadError';
+import { loadErrorMessage } from '../utils/loadError';
 import { Pill } from '../components/Pill';
 
 export default function Organizations() {
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ALL');
 
   async function loadOrgs() {
     setLoading(true);
+    setLoadError('');
     try {
       const res = await api.get('/organizations/viewAll');
       setOrgs(res.data.data || []);
       setLoaded(true);
-    } catch {
-      setOrgs([]);
+    } catch (err) {
+      setLoadError(loadErrorMessage(err, 'organizations'));
     } finally {
       setLoading(false);
     }
@@ -88,7 +92,9 @@ export default function Organizations() {
             </div>
           )}
 
-          {!loaded ? (
+          {loadError ? (
+            <LoadError message={loadError} onRetry={loadOrgs} />
+          ) : !loaded ? (
             <div className="text-center py-12">
               <i className="ti ti-building text-3xl text-gray-200 block mb-2" />
               <p className="text-sm text-gray-400">Click "Load organizations" to view all</p>
