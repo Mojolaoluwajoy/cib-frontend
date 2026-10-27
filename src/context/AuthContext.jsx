@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import api from '../api/axios';
 
 const AuthContext = createContext(null);
 
@@ -48,20 +49,17 @@ export function AuthProvider({ children }) {
           setValidating(false);
           return;
         }
-        // Call a lightweight authenticated endpoint to verify token
-        const res = await fetch('http://localhost:1990/dashboard/stats', {
-          headers: {
-            Authorization: `Bearer ${parsed.token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        if (res.status === 401 || res.status === 403) {
+        // Call a lightweight authenticated endpoint to verify token.
+        // The api client attaches the stored token automatically.
+        await api.get('/dashboard/stats');
+        // If 200 — token is valid, keep user logged in
+      } catch (err) {
+        const status = err.response?.status;
+        if (status === 401 || status === 403) {
           // Token invalid or user disabled/deleted — clear session
           localStorage.removeItem('cib_user');
           setUser({ token: null, role: null, name: null, email: null });
         }
-        // If 200 — token is valid, keep user logged in
-      } catch {
         // Network error — keep user logged in, they'll get kicked on next API call
       } finally {
         setValidating(false);

@@ -1,62 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Topbar from '../components/Topbar';
 import { useAuth } from '../context/AuthContext';
+import { Pill, TypePill } from '../components/Pill';
+import Alert from '../components/Alert';
+import { formatMoney } from '../utils/format';
+import { idempotencyKeyFor } from '../utils/idempotency';
 import api from '../api/axios';
 
-function Pill({ status }) {
-  const map = {
-    APPROVED: 'bg-green-50 text-green-700',
-    SUCCESS: 'bg-green-50 text-green-700',
-    COMPLETED: 'bg-green-50 text-green-700',
-    PENDING: 'bg-amber-50 text-amber-700',
-    PENDING_APPROVAL: 'bg-amber-50 text-amber-700',
-    REJECTED: 'bg-red-50 text-red-700',
-    FAILED: 'bg-red-50 text-red-700',
-    EXPIRED: 'bg-gray-100 text-gray-500',
-    REVERSED: 'bg-purple-50 text-purple-700',
-  };
-  const cls = map[(status || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>{status}</span>
-  );
-}
-
-function TypePill({ type }) {
-  const map = {
-    INTERNAL_TRANSFER: 'bg-blue-50 text-blue-700',
-    EXTERNAL_PAYOUT: 'bg-purple-50 text-purple-700',
-    EXTERNAL_FUNDING: 'bg-green-50 text-green-700',
-  };
-  const cls = map[(type || '').toUpperCase()] || 'bg-gray-100 text-gray-600';
-  return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls}`}>
-      {(type || '').replace(/_/g, ' ')}
-    </span>
-  );
-}
-
-function formatMoney(amount) {
-  if (!amount && amount !== 0) return '—';
-  return '₦' + Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-}
-
-function Alert({ success, error }) {
-  if (success)
-    return (
-      <div className="flex items-center gap-2 bg-green-50 text-green-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-        <i className="ti ti-circle-check" /> {success}
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex items-center gap-2 bg-red-50 text-red-700 text-sm font-medium px-4 py-3 rounded-lg mb-4">
-        <i className="ti ti-alert-circle" /> {error}
-      </div>
-    );
-  return null;
-}
+// Number of rows per page in All Transactions
+const PAGE_SIZE = 20;
 
 function Flow({ steps }) {
   return (
@@ -133,8 +87,8 @@ export default function Transactions() {
     sourceAccount: '',
     destinationAccount: '',
     amount: '',
-    idempotencyKey: '',
   });
+  const intKeyRef = useRef(null);
   const [intLoading, setIntLoading] = useState(false);
   const [intSuccess, setIntSuccess] = useState('');
   const [intError, setIntError] = useState('');
@@ -147,8 +101,8 @@ export default function Transactions() {
     bankCode: '',
     bankName: '',
     accountName: '',
-    idempotencyKey: '',
   });
+  const payKeyRef = useRef(null);
   const [payLoading, setPayLoading] = useState(false);
   const [paySuccess, setPaySuccess] = useState('');
   const [payError, setPayError] = useState('');
@@ -158,8 +112,8 @@ export default function Transactions() {
     destinationAccount: '',
     amount: '',
     email: '',
-    idempotencyKey: '',
   });
+  const fundKeyRef = useRef(null);
   const [fundLoading, setFundLoading] = useState(false);
   const [fundSuccess, setFundSuccess] = useState('');
   const [fundError, setFundError] = useState('');
@@ -178,45 +132,42 @@ export default function Transactions() {
   const [allTxns, setAllTxns] = useState([]);
   const [allLoading, setAllLoading] = useState(false);
   const [allLoaded, setAllLoaded] = useState(false);
-
-  // ── Webhook simulator state ──
-  const [webhookRef, setWebhookRef] = useState('');
-  const [webhookEvent, setWebhookEvent] = useState('transfer.success');
-  const [webhookLoading, setWebhookLoading] = useState(false);
-  const [webhookSuccess, setWebhookSuccess] = useState('');
-  const [webhookError, setWebhookError] = useState('');
+  const [allPage, setAllPage] = useState(0);
+  const [allTotalPages, setAllTotalPages] = useState(1);
+  const [allTotal, setAllTotal] = useState(0);
 
   useEffect(() => {
     if (tabFromUrl === 'pending') loadPending();
     if (tabFromUrl === 'all') loadAll();
+    // Only refetch when the tab changes; paging is driven by the Previous/Next buttons
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabFromUrl]);
 
   async function handleInternal(e) {
     e.preventDefault();
     setIntError('');
     setIntSuccess('');
-    if (
-      !intForm.sourceAccount ||
-      !intForm.destinationAccount ||
-      !intForm.amount ||
-      !intForm.idempotencyKey
-    ) {
+    if (!intForm.sourceAccount || !intForm.destinationAccount || !intForm.amount) {
       setIntError('Please fill in all fields.');
       return;
     }
     setIntLoading(true);
     try {
-      const res = await api.post('/transactions/initiate', {
+      const payload = {
         sourceAccount: intForm.sourceAccount,
         destinationAccount: intForm.destinationAccount,
         amount: Number(intForm.amount),
-        idempotencyKey: intForm.idempotencyKey,
         type: 'INTERNAL_TRANSFER',
+      };
+      const res = await api.post('/transactions/initiate', {
+        ...payload,
+        idempotencyKey: idempotencyKeyFor(intKeyRef, payload),
       });
       setIntSuccess(
         `Transfer initiated! Ref: ${res.data.data?.transactionReference || '—'}. Waiting for approver.`,
       );
-      setIntForm({ sourceAccount: '', destinationAccount: '', amount: '', idempotencyKey: '' });
+      intKeyRef.current = null;
+      setIntForm({ sourceAccount: '', destinationAccount: '', amount: '' });
     } catch (err) {
       setIntError(err.response?.data?.message || 'Transfer failed.');
     } finally {
@@ -234,20 +185,24 @@ export default function Transactions() {
       !payForm.accountNumber ||
       !payForm.bankCode ||
       !payForm.bankName ||
-      !payForm.accountName ||
-      !payForm.idempotencyKey
+      !payForm.accountName
     ) {
       setPayError('Please fill in all fields.');
       return;
     }
     setPayLoading(true);
     try {
-      await api.post('/external/payout', {
+      const payload = {
         ...payForm,
         amount: Number(payForm.amount),
         type: 'EXTERNAL_PAYOUT',
+      };
+      await api.post('/external/transaction/payout', {
+        ...payload,
+        idempotencyKey: idempotencyKeyFor(payKeyRef, payload),
       });
       setPaySuccess('Payout initiated! Waiting for approver.');
+      payKeyRef.current = null;
       setPayForm({
         sourceAccount: '',
         amount: '',
@@ -255,7 +210,6 @@ export default function Transactions() {
         bankCode: '',
         bankName: '',
         accountName: '',
-        idempotencyKey: '',
       });
     } catch (err) {
       setPayError(err.response?.data?.message || 'Payout failed.');
@@ -268,30 +222,34 @@ export default function Transactions() {
     e.preventDefault();
     setFundError('');
     setFundSuccess('');
-    if (
-      !fundForm.destinationAccount ||
-      !fundForm.amount ||
-      !fundForm.email ||
-      !fundForm.idempotencyKey
-    ) {
+    if (!fundForm.destinationAccount || !fundForm.amount || !fundForm.email) {
       setFundError('Please fill in all fields.');
       return;
     }
     setFundLoading(true);
     try {
-      const res = await api.post('/external/fund', {
-        ...fundForm,
+      // Backend FundRequest names the account being funded "accountNumber"
+      const payload = {
+        accountNumber: fundForm.destinationAccount,
         amount: Number(fundForm.amount),
+        email: fundForm.email,
         type: 'EXTERNAL_FUNDING',
+      };
+      const res = await api.post('/external/transaction/fund', {
+        ...payload,
+        idempotencyKey: idempotencyKeyFor(fundKeyRef, payload),
       });
-      const paymentUrl = res.data.data?.authorization_url || res.data.data?.paymentUrl;
+      // Backend passes through Paystack's response: { status, message, data: { authorization_url, reference } }
+      const paystack = res.data.data?.data || res.data.data;
+      const paymentUrl = paystack?.authorization_url || paystack?.paymentUrl;
       if (paymentUrl) {
         setFundSuccess('Funding initiated! Opening Paystack...');
         setTimeout(() => window.open(paymentUrl, '_blank'), 1500);
       } else {
-        setFundSuccess(`Funding initiated! Ref: ${res.data.data?.reference || '—'}`);
+        setFundSuccess(`Funding initiated! Ref: ${paystack?.reference || '—'}`);
       }
-      setFundForm({ destinationAccount: '', amount: '', email: '', idempotencyKey: '' });
+      fundKeyRef.current = null;
+      setFundForm({ destinationAccount: '', amount: '', email: '' });
     } catch (err) {
       setFundError(err.response?.data?.message || 'Funding failed.');
     } finally {
@@ -311,11 +269,19 @@ export default function Transactions() {
     }
   }
 
-  async function loadAll() {
+  async function loadAll(page = allPage) {
     setAllLoading(true);
     try {
-      const res = await api.get('/transactions/transactions?page=0&size=50');
-      setAllTxns(res.data.data?.content || res.data.data || []);
+      const res = await api.get('/transactions/transactions', {
+        params: { page, size: PAGE_SIZE },
+      });
+      // Backend returns a Spring Page; newer Spring versions nest the counts under "page"
+      const data = res.data.data;
+      const content = data?.content || data || [];
+      setAllTxns(content);
+      setAllPage(page);
+      setAllTotalPages(data?.totalPages ?? data?.page?.totalPages ?? 1);
+      setAllTotal(data?.totalElements ?? data?.page?.totalElements ?? content.length);
       setAllLoaded(true);
     } catch {
       setAllTxns([]);
@@ -343,33 +309,6 @@ export default function Transactions() {
       setApprovalError(err.response?.data?.message || 'Could not process transaction.');
     } finally {
       setApprovalLoading(false);
-    }
-  }
-
-  async function simulateWebhook(e) {
-    e.preventDefault();
-    setWebhookError('');
-    setWebhookSuccess('');
-    if (!webhookRef) {
-      setWebhookError('Please enter a transaction reference.');
-      return;
-    }
-    setWebhookLoading(true);
-    try {
-      await api.post('/webhook/paystack', {
-        event: webhookEvent,
-        data: {
-          reference: webhookRef,
-          status: webhookEvent === 'transfer.success' ? 'success' : 'failed',
-        },
-      });
-      setWebhookSuccess(`Webhook simulated! Event "${webhookEvent}" sent for ref: ${webhookRef}`);
-      setWebhookRef('');
-      loadPending();
-    } catch (err) {
-      setWebhookError(err.response?.data?.message || 'Webhook simulation failed.');
-    } finally {
-      setWebhookLoading(false);
     }
   }
 
@@ -423,12 +362,6 @@ export default function Transactions() {
                 value={intForm.amount}
                 onChange={(e) => setIntForm({ ...intForm, amount: e.target.value })}
                 placeholder="e.g. 500000"
-              />
-              <Field
-                label="Idempotency key"
-                value={intForm.idempotencyKey}
-                onChange={(e) => setIntForm({ ...intForm, idempotencyKey: e.target.value })}
-                placeholder="e.g. TXN-001"
               />
               <div className="col-span-2 flex justify-end">
                 <button
@@ -504,13 +437,6 @@ export default function Transactions() {
                 onChange={(e) => setPayForm({ ...payForm, accountName: e.target.value })}
                 placeholder="Recipient's full name"
               />
-              <Field
-                label="Idempotency key"
-                full
-                value={payForm.idempotencyKey}
-                onChange={(e) => setPayForm({ ...payForm, idempotencyKey: e.target.value })}
-                placeholder="e.g. PAY-001"
-              />
               <div className="col-span-2 flex justify-end">
                 <button
                   type="submit"
@@ -561,12 +487,6 @@ export default function Transactions() {
                 value={fundForm.email}
                 onChange={(e) => setFundForm({ ...fundForm, email: e.target.value })}
                 placeholder="Payer's email for Paystack"
-              />
-              <Field
-                label="Idempotency key"
-                value={fundForm.idempotencyKey}
-                onChange={(e) => setFundForm({ ...fundForm, idempotencyKey: e.target.value })}
-                placeholder="e.g. FUND-001"
               />
               <div className="col-span-2 flex justify-end">
                 <button
@@ -696,66 +616,6 @@ export default function Transactions() {
                 </div>
               )}
             </div>
-
-            {/* Webhook simulator — dev only */}
-            <div className="border-2 border-dashed border-amber-300 bg-amber-50 rounded-xl p-6">
-              <div className="flex items-center gap-3 mb-1">
-                <i className="ti ti-flask text-amber-600 text-lg" />
-                <h2 className="text-sm font-semibold text-amber-800">Testing Tools</h2>
-                <span className="text-xs font-semibold bg-amber-500 text-white px-2.5 py-0.5 rounded-full">
-                  DEV ONLY
-                </span>
-              </div>
-              <p className="text-xs text-amber-700 mb-5">
-                Simulate a Paystack webhook for external payout testing.
-                <strong className="ml-1">Remove before going live.</strong>
-              </p>
-              <Alert success={webhookSuccess} error={webhookError} />
-              <form onSubmit={simulateWebhook} className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                    Transaction reference
-                  </label>
-                  <input
-                    value={webhookRef}
-                    onChange={(e) => setWebhookRef(e.target.value)}
-                    placeholder="Paste reference from approved payout"
-                    className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white placeholder:text-gray-300"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
-                    Simulate event
-                  </label>
-                  <select
-                    value={webhookEvent}
-                    onChange={(e) => setWebhookEvent(e.target.value)}
-                    className="px-3 py-2.5 border border-amber-200 rounded-lg text-sm outline-none focus:border-amber-400 bg-white"
-                  >
-                    <option value="transfer.success">transfer.success</option>
-                    <option value="transfer.failed">transfer.failed</option>
-                    <option value="transfer.reversed">transfer.reversed</option>
-                  </select>
-                </div>
-                <div className="col-span-2 flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={webhookLoading}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 disabled:opacity-60 transition-all"
-                  >
-                    {webhookLoading ? (
-                      <>
-                        <i className="ti ti-loader animate-spin" /> Simulating...
-                      </>
-                    ) : (
-                      <>
-                        <i className="ti ti-player-play" /> Simulate webhook
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
           </div>
         )}
 
@@ -768,7 +628,7 @@ export default function Transactions() {
                 <p className="text-xs text-gray-500 mt-0.5">Full transaction history</p>
               </div>
               <button
-                onClick={loadAll}
+                onClick={() => loadAll()}
                 disabled={allLoading}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-all"
               >
@@ -826,6 +686,27 @@ export default function Transactions() {
                     ))}
                   </tbody>
                 </table>
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-xs text-gray-500">
+                    Page {allPage + 1} of {Math.max(allTotalPages, 1)} · {allTotal} transactions
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => loadAll(allPage - 1)}
+                      disabled={allLoading || allPage === 0}
+                      className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-all"
+                    >
+                      <i className="ti ti-chevron-left" /> Previous
+                    </button>
+                    <button
+                      onClick={() => loadAll(allPage + 1)}
+                      disabled={allLoading || allPage + 1 >= allTotalPages}
+                      className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 text-gray-600 text-xs font-semibold rounded-lg hover:bg-gray-50 disabled:opacity-40 transition-all"
+                    >
+                      Next <i className="ti ti-chevron-right" />
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
